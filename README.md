@@ -54,8 +54,39 @@ createViewer(config).mount('#app')
 | `features.entities` | string[] | no | entity names getting list + detail routes (`/<entity>`, `/<entity>/:id`) |
 | `extraViews` | RouteRecord[] | no | website-specific routes appended to the router |
 | `routes` | RouteRecord[] | no | raw vue-router records appended after `extraViews` |
-| `navigation` | object | no | passed through untouched (consumed by `@metanull/viewer-layout`) |
+| `shell` | Vue component | no | page-shell component rendered around the active view (see below) |
+| `navigation` | object | no | passed through untouched as props of the `shell` component |
 | `messages` | `{ [lang]: flatJson }` | no | website locale files (flat keys), merged over the default English chrome strings |
+
+### Page shell (`config.shell`)
+
+When `config.shell` is set, the root component renders it around `<router-view/>`
+instead of the bare view. The shell is any component honouring this contract:
+
+- receives, via `v-bind`: `languages` (the resolved language list), every key of
+  `config.navigation` (untouched), and `language` (the current locale, reactive);
+- may emit `update:language` — `createViewer` sets the global vue-i18n locale;
+- renders its default slot as the page content (that slot is the active view).
+
+`PageShell` from `@metanull/viewer-layout` honours this contract; a website enables
+it entirely from `dataset.config.js`:
+
+```js
+import { PageShell } from '@metanull/viewer-layout'
+
+export default {
+  // …
+  shell: PageShell,
+  navigation: {
+    headerTitle: 'My Museum',
+    navLinks: [{ label: 'Home', href: '#/' }],
+    footerText: '© My Museum',
+  },
+}
+```
+
+(Navigation links are plain `href`s — with the hash router, `#/things` navigates
+without any router coupling in the layout.)
 
 ### `useDataPackage()` → data access (the only allowed way to read the data package)
 
