@@ -11,4 +11,3 @@ permissions:
 jobs:
   publish:
     uses: metanull/viewer-workflows/.github/workflows/package-release.yml@v1
-    secrets: inherit

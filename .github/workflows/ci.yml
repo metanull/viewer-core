@@ -3,10 +3,13 @@ name: CI
 on:
   pull_request:
 
+# packages: read lets github.token install the private @metanull/*-data
+# packages the downstream websites depend on. A called workflow can only
+# downgrade the caller's token, so the grant has to be made here.
 permissions:
   contents: read
+  packages: read
 
 jobs:
   ci:
     uses: metanull/viewer-workflows/.github/workflows/package-ci.yml@v1
-    secrets: inherit
