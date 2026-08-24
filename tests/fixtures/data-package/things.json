@@ -1,0 +1,17 @@
+[
+  {
+    "id": "1",
+    "title": "First Thing",
+    "description": "A record with **bold** markdown."
+  },
+  {
+    "id": "2",
+    "title": "Second Thing",
+    "description": "A plain record."
+  },
+  {
+    "id": "3",
+    "name": "Third Thing",
+    "description": "A record using *name* instead of title."
+  }
+]

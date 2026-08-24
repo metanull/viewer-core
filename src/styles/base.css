@@ -1,0 +1,49 @@
+/* Structural rules only. Colors, fonts and brand values come from CSS custom
+   properties defined by the website (or by @metanull/viewer-layout). */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--vc-font-body, system-ui, sans-serif);
+  line-height: var(--vc-line-height, 1.5);
+  background: var(--vc-color-background, transparent);
+  color: var(--vc-color-text, inherit);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+.vc-home,
+.vc-list,
+.vc-detail {
+  max-width: var(--vc-content-width, 60rem);
+  margin-inline: auto;
+  padding: var(--vc-content-padding, 1.5rem);
+}
+
+.vc-detail dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+}
+
+.vc-detail dt {
+  font-weight: var(--vc-weight-label, 600);
+}
+
+.vc-detail dd {
+  margin: 0;
+}
+
+.vc-pagination {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+}

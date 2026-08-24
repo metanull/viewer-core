@@ -1,0 +1,10 @@
+{
+  "chrome.home": "Home",
+  "chrome.backToList": "Back to the list",
+  "chrome.empty": "Nothing to display yet.",
+  "chrome.loading": "Loading…",
+  "chrome.notFound": "This record does not exist.",
+  "chrome.previous": "Previous",
+  "chrome.next": "Next",
+  "chrome.page": "Page {page} of {total}"
+}
