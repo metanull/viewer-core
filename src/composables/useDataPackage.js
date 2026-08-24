@@ -1,4 +1,5 @@
-const entityModules = import.meta.glob('@inventory-data/*.json')
+// package.json is npm metadata, not an entity — exclude it from the glob.
+const entityModules = import.meta.glob(['@inventory-data/*.json', '!**/package.json'])
 const manifestModules = import.meta.glob('@inventory-data/manifest.json', { eager: true })
 
 const manifest = Object.values(manifestModules)[0]?.default ?? {}

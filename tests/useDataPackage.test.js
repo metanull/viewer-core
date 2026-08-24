@@ -8,8 +8,10 @@ describe('useDataPackage', () => {
     expect(languages).toEqual(['en', 'fr'])
   })
 
-  it('lists entities without the manifest', () => {
+  it('lists entities without the manifest or npm metadata', () => {
     const { entityNames } = useDataPackage()
+    // The fixture directory contains package.json, like every installed
+    // npm package — it must not surface as an entity.
     expect(entityNames).toEqual(['things'])
   })
 
