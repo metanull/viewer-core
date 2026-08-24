@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- `useDataPackage` no longer surfaces the data package's own `package.json`
+  as an entity (any installed npm package has one; the glob now excludes it).
+
 ## 0.2.0
 
 - New optional `config.shell`: a page-shell component (e.g. `PageShell` from
