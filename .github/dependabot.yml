@@ -4,3 +4,20 @@ updates:
     directory: /
     schedule:
       interval: weekly
+
+  # The reusable workflows in metanull/viewer-workflows are pinned to an exact
+  # version in .github/workflows/*.yml, never to a moving major tag. Dependabot
+  # covers reusable-workflow refs as well as step-level actions, so a new
+  # viewer-workflows release arrives here as a pull request that runs this
+  # repository's own CI before it is adopted — instead of a force-moved `v1`
+  # deploying untested CI to every consuming repo at once.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+    groups:
+      github-actions:
+        patterns:
+          - "*"
