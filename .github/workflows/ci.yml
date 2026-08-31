@@ -12,4 +12,4 @@ permissions:
 
 jobs:
   ci:
-    uses: metanull/viewer-workflows/.github/workflows/package-ci.yml@v1.2.0
+    uses: metanull/viewer-workflows/.github/workflows/package-ci.yml@feature/clean-platform-maintenance-flow
