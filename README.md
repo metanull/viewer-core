@@ -129,6 +129,6 @@ structural rules only. It consumes CSS custom properties and never defines brand
 
 ## Release procedure
 
-1. Merge to `main` via PR (CI: tests + downstream builds of `dependents.json`).
+1. Merge to `main` via PR (CI: tests + a downstream build of every website).
 2. Create a GitHub release with tag `vX.Y.Z` — CI publishes to GitHub Packages; never publish from a laptop.
 3. Semver rules: **patch** = fix; **minor** = backward-compatible addition; **major** = breaking change (breaking = any change requiring an edit in a consuming website).
