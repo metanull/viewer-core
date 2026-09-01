@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.1
+
+- The texts are keyed on `Symbol.for('@metanull/viewer-core:i18n')` rather than
+  a module-local `Symbol`. With two entry points onto the same module, a
+  bundler can load it twice — `createViewer` reaching it relatively and
+  `viewer-layout` through `/i18n` — and two copies meant two distinct keys: the
+  application provided one, the layout injected the other, and `useI18n()`
+  threw "no texts installed" in an application that plainly had them. Seen on
+  every website's smoke test as soon as `viewer-layout` 2.0.0 was installed
+  against one.
+
 ## 1.2.0
 
 - New entry point `@metanull/viewer-core/i18n`, exporting the text runtime on
