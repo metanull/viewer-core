@@ -30,8 +30,8 @@ function renderValue(value) {
 
 <template>
   <article class="vc-detail">
-    <p v-if="record === undefined">{{ $t('chrome.loading') }}</p>
-    <p v-else-if="record === null">{{ $t('chrome.notFound') }}</p>
+    <p v-if="record === undefined">{{ $t('core.status.loading') }}</p>
+    <p v-else-if="record === null">{{ $t('core.detail.notFound') }}</p>
     <template v-else>
       <h1>{{ record.title ?? record.name ?? record.id }}</h1>
       <dl>
@@ -42,7 +42,7 @@ function renderValue(value) {
       </dl>
     </template>
     <p>
-      <router-link :to="`/${entity}`">{{ $t('chrome.backToList') }}</router-link>
+      <router-link :to="`/${entity}`">{{ $t('core.nav.backToList') }}</router-link>
     </p>
   </article>
 </template>

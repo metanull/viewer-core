@@ -1,6 +1,7 @@
 <script setup>
 import { computed, inject } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { useI18n } from './i18n/index.js'
+import { negotiateLanguage } from './i18n/language.js'
 import { VIEWER_CONFIG } from './injectionKeys.js'
 
 const config = inject(VIEWER_CONFIG, {})
@@ -15,8 +16,10 @@ const shellProps = computed(() => ({
   language: locale.value,
 }))
 
+// The shell is the website's own component, so what it emits is checked here
+// rather than trusted: the active language is always one the website offers.
 function setLanguage(language) {
-  locale.value = language
+  locale.value = negotiateLanguage(config.languages, { requested: language })
 }
 </script>
 
