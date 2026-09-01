@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.0
+
+- New entry point `@metanull/viewer-core/i18n`, exporting the text runtime on
+  its own. The package root re-exports `useDataPackage`, whose
+  `import.meta.glob` of the data package needs an `@inventory-data` alias, so a
+  package that wants only `useI18n` had to define that alias or fail to build.
+  `@metanull/viewer-layout` 2.0.0 is the one that needs this; both specifiers
+  resolve to the same module, so an application still has one set of texts.
+
 ## 1.1.0
 
 - Texts are handled here, by a first-party module of about thirty lines, with

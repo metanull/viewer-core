@@ -129,6 +129,12 @@ createViewer({ ...config, messages: mergeMessages(catalogues, local) }).mount('#
 | `mergeMessages(...catalogues)` | the merge rule above |
 | `negotiateLanguage`, `isRtl` | the language rules, for a website that needs them directly |
 
+A package that needs only the text runtime — `@metanull/viewer-layout` is the
+one — imports it from `@metanull/viewer-core/i18n` instead of the package root.
+Both resolve to the same module, so there is one set of texts in the
+application; the subpath just leaves the router and the data package out of
+that build.
+
 `t(key)` returns the text in the active language, falls back to English, and
 returns the key itself if neither has it. **Keys at call sites must be written
 out in full**, never assembled — that is what lets CI verify that every text a
