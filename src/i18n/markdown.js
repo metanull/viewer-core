@@ -6,8 +6,12 @@ import { Marked } from 'marked'
 //
 // Raw HTML is escaped rather than rendered. Texts are written by translators
 // through the GitHub web interface, and the rules they are given say Markdown
-// only; escaping is what makes that a guarantee instead of a request. The
-// dictionary's own checks reject HTML before it ever gets here.
+// only; escaping is what makes that a guarantee instead of a request.
+//
+// This is the only place that guarantee lives. viewer-i18n's checker used to
+// reject HTML too, which added nothing here and was wrong about autolinks and
+// code spans; it no longer looks. Anything relaxed in this file is relaxed
+// everywhere, with nothing behind it.
 
 const ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }
 
