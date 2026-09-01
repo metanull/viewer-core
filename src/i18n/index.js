@@ -10,7 +10,14 @@ import { computed, inject, ref } from 'vue'
 // to the text, never inside it. A future need outside that is a different
 // system, not an extension of this one.
 
-export const VIEWER_I18N = Symbol('viewer-i18n')
+// Symbol.for, not Symbol: this module is reachable through two specifiers —
+// `@metanull/viewer-core` (which createViewer imports relatively) and
+// `@metanull/viewer-core/i18n` (which viewer-layout imports) — and a bundler
+// that resolves them to two module instances would create two distinct keys.
+// The application would then provide one and the layout inject the other,
+// which reads as "no texts installed" in a package that plainly installed
+// them. A key from the global registry is the same key in every instance.
+export const VIEWER_I18N = Symbol.for('@metanull/viewer-core:i18n')
 
 const BASE_LANGUAGE = 'en'
 
