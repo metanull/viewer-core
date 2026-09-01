@@ -1,6 +1,7 @@
 import { defineComponent, h } from 'vue'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createViewer } from '../src/index.js'
+import { messages } from './fixtures/messages.js'
 
 const FakeShell = defineComponent({
   name: 'FakeShell',
@@ -18,8 +19,16 @@ const FakeShell = defineComponent({
         h('p', { class: 'fake-shell__language' }, props.language),
         h(
           'button',
-          { class: 'fake-shell__switch', onClick: () => emit('update:language', 'fr') },
+          {
+            class: 'fake-shell__switch',
+            onClick: () => emit('update:language', props.languages[1] ?? 'fr'),
+          },
           'switch',
+        ),
+        h(
+          'button',
+          { class: 'fake-shell__bogus', onClick: () => emit('update:language', 'xx') },
+          'bogus',
         ),
         slots.default?.(),
       ])
@@ -33,7 +42,12 @@ const config = {
   features: { entities: ['things'] },
   shell: FakeShell,
   navigation: { headerTitle: 'Shell Title' },
+  messages,
 }
+
+// The visitor's choice is remembered between visits, so each test starts as a
+// first visit; otherwise the language one test picks decides the next one's.
+beforeEach(() => localStorage.clear())
 
 async function mountViewer(overrides = {}) {
   window.location.hash = '#/'
@@ -62,11 +76,33 @@ describe('config.shell', () => {
     app.unmount()
   })
 
-  it('sets the global locale when the shell emits update:language', async () => {
+  it('sets the language when the shell emits update:language', async () => {
     const { app, host } = await mountViewer()
     host.querySelector('.fake-shell__switch').click()
+    await vi.waitFor(() =>
+      expect(host.querySelector('.fake-shell__language').textContent).toBe('fr')
+    )
+    app.unmount()
+  })
+
+  it('remembers the choice, and sets the document direction', async () => {
+    const first = await mountViewer({ languages: ['en', 'ar'] })
+    first.host.querySelector('.fake-shell__switch').click()
+    await vi.waitFor(() => expect(document.documentElement.getAttribute('dir')).toBe('rtl'))
+    first.app.unmount()
+
+    const { app, host } = await mountViewer({ languages: ['en', 'ar'] })
+    await vi.waitFor(() =>
+      expect(host.querySelector('.fake-shell__language').textContent).toBe('ar')
+    )
+    app.unmount()
+  })
+
+  it('ignores a language the website does not offer', async () => {
+    const { app, host } = await mountViewer()
+    host.querySelector('.fake-shell__bogus').click()
     await Promise.resolve()
-    expect(host.querySelector('.fake-shell__language').textContent).toBe('fr')
+    expect(host.querySelector('.fake-shell__language').textContent).toBe('en')
     app.unmount()
   })
 

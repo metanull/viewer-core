@@ -1,11 +1,15 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createViewer } from '../src/index.js'
+import { messages } from './fixtures/messages.js'
 
 const config = {
   datasetPackage: '@metanull/fixture-data',
   siteName: 'Fixture Museum',
   features: { entities: ['things'] },
+  messages,
 }
+
+beforeEach(() => localStorage.clear())
 
 async function mountViewer() {
   window.location.hash = '#/'
@@ -41,10 +45,16 @@ describe('createViewer', () => {
     app.unmount()
   })
 
-  it('shows the not-found chrome string for a missing record', async () => {
+  it('shows the not-found text for a missing record', async () => {
     const { app, host, router } = await mountViewer()
     await router.push('/things/999')
     await vi.waitFor(() => expect(host.innerHTML).toContain('This record does not exist.'))
+    app.unmount()
+  })
+
+  it('carries the language in the URL of a multilingual website', async () => {
+    const { app, router } = await mountViewer()
+    await vi.waitFor(() => expect(router.currentRoute.value.query.lang).toBe('en'))
     app.unmount()
   })
 })

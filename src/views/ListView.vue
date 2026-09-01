@@ -34,8 +34,8 @@ function labelOf(record) {
 <template>
   <section class="vc-list">
     <h1>{{ entity }}</h1>
-    <p v-if="records === null">{{ $t('chrome.loading') }}</p>
-    <p v-else-if="records.length === 0">{{ $t('chrome.empty') }}</p>
+    <p v-if="records === null">{{ $t('core.status.loading') }}</p>
+    <p v-else-if="records.length === 0">{{ $t('core.list.empty') }}</p>
     <template v-else>
       <ul>
         <li v-for="record in pageRecords" :key="record.id">
@@ -44,16 +44,20 @@ function labelOf(record) {
       </ul>
       <nav v-if="totalPages > 1" class="vc-pagination">
         <router-link v-if="page > 1" :to="{ query: { page: page - 1 } }">
-          {{ $t('chrome.previous') }}
+          {{ $t('core.pagination.previous') }}
         </router-link>
-        <span>{{ $t('chrome.page', { page, total: totalPages }) }}</span>
+        <!-- The position is rendered here, next to the texts, rather than
+             inserted into one: a text that has to carry a number cannot be
+             translated without carrying the number's place in the sentence
+             too, and that is the one thing this system does not do. -->
+        <span class="vc-pagination__position">{{ page }} / {{ totalPages }}</span>
         <router-link v-if="page < totalPages" :to="{ query: { page: page + 1 } }">
-          {{ $t('chrome.next') }}
+          {{ $t('core.pagination.next') }}
         </router-link>
       </nav>
     </template>
     <p>
-      <router-link to="/">{{ $t('chrome.home') }}</router-link>
+      <router-link to="/">{{ $t('core.nav.home') }}</router-link>
     </p>
   </section>
 </template>

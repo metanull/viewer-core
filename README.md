@@ -4,8 +4,13 @@ Application engine for MWNF websites. A website repo is a thin shell: it provide
 `dataset.config.js`, its data package and its locale files — this package turns that
 into a mounted Vue application (router, i18n, data access, shared views).
 
-Stack: Vue 3, Vue Router (hash history), vue-i18n, Vite, Vitest. Distributed as raw
+Stack: Vue 3, Vue Router (hash history), Vite, Vitest. Distributed as raw
 ESM source; the website's Vite build compiles it.
+
+Texts are handled here, without an i18n library: see [Texts](#texts). `vue-i18n`
+is still installed as a peer dependency, and nothing in this package uses it —
+it is there for `@metanull/viewer-layout` 1.x and for website views that have
+not migrated yet, and goes away with them.
 
 ## Install
 
@@ -56,7 +61,7 @@ createViewer(config).mount('#app')
 | `routes` | RouteRecord[] | no | raw vue-router records appended after `extraViews` |
 | `shell` | Vue component | no | page-shell component rendered around the active view (see below) |
 | `navigation` | object | no | passed through untouched as props of the `shell` component |
-| `messages` | `{ [lang]: flatJson }` | no | website locale files (flat keys), merged over the default English chrome strings |
+| `messages` | `{ [lang]: { [key]: text } }` | no | the website's effective catalogue: the `@metanull/viewer-i18n` bundle it receives, merged with its own `locales/` files (see [Texts](#texts)) |
 
 ### Page shell (`config.shell`)
 
@@ -65,7 +70,8 @@ instead of the bare view. The shell is any component honouring this contract:
 
 - receives, via `v-bind`: `languages` (the resolved language list), every key of
   `config.navigation` (untouched), and `language` (the current locale, reactive);
-- may emit `update:language` — `createViewer` sets the global vue-i18n locale;
+- may emit `update:language` — `createViewer` sets the active language, after
+  checking that the website offers it;
 - renders its default slot as the page content (that slot is the active view).
 
 `PageShell` from `@metanull/viewer-layout` honours this contract; a website enables
@@ -87,6 +93,63 @@ export default {
 
 (Navigation links are plain `href`s — with the hash router, `#/things` navigates
 without any router coupling in the layout.)
+
+## Texts
+
+A text is a key and a Markdown text. Nothing else: no placeholders, no
+interpolation, no pluralisation, no HTML. A value produced at run time — a
+number, a date, a count — is rendered by the component *next to* the text,
+never inside it, which is what lets a text be translated freely.
+
+Shared texts come from [`@metanull/viewer-i18n`](https://github.com/metanull/viewer-i18n);
+a website's own texts come from its `locales/<lang>.json`. The website merges
+them and passes the result as `config.messages` — local wins, and that is the
+only merge rule:
+
+```js
+import { createViewer, mergeMessages } from '@metanull/viewer-core'
+import { catalogues } from '@metanull/viewer-i18n/gallery'
+import config from './dataset.config.js'
+
+const local = {}
+for (const [path, module] of Object.entries(import.meta.glob('../locales/*.json', { eager: true }))) {
+  local[path.split('/').pop().replace(/\.json$/, '')] = module.default
+}
+
+createViewer({ ...config, messages: mergeMessages(catalogues, local) }).mount('#app')
+```
+
+| Export | Use |
+| --- | --- |
+| `$t(key)` | in a template |
+| `useI18n()` → `{ t, locale }` | in `<script setup>` |
+| `useLocale()` | the active language, read-only |
+| `<I18nText keypath tag="div">` | a text rendered as Markdown (block) |
+| `<I18nTextInline keypath tag="span">` | the same, without the surrounding paragraph |
+| `mergeMessages(...catalogues)` | the merge rule above |
+| `negotiateLanguage`, `isRtl` | the language rules, for a website that needs them directly |
+
+`t(key)` returns the text in the active language, falls back to English, and
+returns the key itself if neither has it. **Keys at call sites must be written
+out in full**, never assembled — that is what lets CI verify that every text a
+page asks for exists.
+
+Attributes (`aria-label`, `placeholder`, `title`, `alt`) take `t()`, not the
+components.
+
+The scope of this is frozen: lookup, fallback, reactivity. A future need for
+pluralisation or interpolation is a different system, not an extension of this
+one.
+
+### Language
+
+`createViewer` resolves the language once: `?lang=` in the URL, then the
+visitor's remembered choice, then their browser's preferences, then English —
+skipping at every step anything the website does not offer. On a website
+offering more than one language the URL carries `?lang=`, so a page can be
+linked and shared in the language it was read in; a single-language website
+never gets the parameter. `lang` and `dir` are set on `<html>`, so a
+right-to-left language renders right to left.
 
 ### `useDataPackage()` → data access (the only allowed way to read the data package)
 
