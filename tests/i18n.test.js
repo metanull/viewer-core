@@ -91,6 +91,21 @@ describe('the Markdown pipeline', () => {
     expect(html).toContain('&lt;script&gt;')
   })
 
+  it('escapes raw HTML in a record field too, where the legacy content is', () => {
+    // The importer converts legacy HTML to Markdown on the way in, so a tag
+    // here means that conversion missed a field. Showing it is how it gets
+    // noticed and fixed upstream; rendering it would hide it, and would trust
+    // a museum record with markup.
+    const html = renderBlock('An <i>italic</i> title.', { breaks: true })
+    expect(html).toContain('&lt;i&gt;')
+    expect(html).not.toContain('<i>')
+  })
+
+  it('keeps a single newline as a line break only for a record', () => {
+    expect(renderBlock('One\nTwo', { breaks: true })).toContain('<br>')
+    expect(renderBlock('One\nTwo')).not.toContain('<br>')
+  })
+
   it('renders a text through the I18nText component', () => {
     const i18n = createI18n({ messages: { en: { 'core.about.body': 'A **bold** claim.' } } })
     const Probe = defineComponent({

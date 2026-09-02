@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.3.0
+
+- `renderBlock` and `renderInline` take `{ breaks: true }`, for text that comes
+  from a record rather than from the dictionary. A field arrives from a database
+  where a newline was typed to be a line break; a translated text is prose and
+  wraps freely. Same escaping either way.
+- `DetailView` renders record fields through that pipeline instead of calling
+  `marked.parse` with HTML enabled. The importer converts legacy HTML to
+  Markdown on the way in, so a tag reaching a field is a fault upstream: it now
+  shows as the characters it is, rather than being rendered and hidden.
+- This is the only Markdown pipeline in `viewer-core` again, and it is exported
+  so a website does not need a second one.
+
 ## 1.2.1
 
 - The texts are keyed on `Symbol.for('@metanull/viewer-core:i18n')` rather than

@@ -1,7 +1,7 @@
 <script setup>
-import { marked } from 'marked'
 import { computed, ref, watchEffect } from 'vue'
 import { useDataPackage } from '../composables/useDataPackage.js'
+import { renderBlock } from '../i18n/markdown.js'
 
 const props = defineProps({
   entity: { type: String, required: true },
@@ -22,9 +22,14 @@ const fields = computed(() =>
   record.value ? Object.entries(record.value).filter(([key]) => key !== 'id') : []
 )
 
-// Data packages are curated, trusted content; string fields may contain markdown.
+// Through the same pipeline as every text, which escapes raw HTML rather than
+// rendering it. A data package holds Markdown: the importer converts the legacy
+// HTML on the way in, so HTML reaching a field here is a fault upstream and the
+// fix belongs in the importer. Rendering it would hide that, and would make a
+// museum record — written by hand, years ago, in another system — the one input
+// this application trusts with markup.
 function renderValue(value) {
-  return typeof value === 'string' ? marked.parse(value) : JSON.stringify(value)
+  return typeof value === 'string' ? renderBlock(value, { breaks: true }) : JSON.stringify(value)
 }
 </script>
 
