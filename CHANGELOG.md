@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.5.0
+
+- `renderBlock`/`renderInline` gain an optional `glossary` — `[{ id, spelling }]`
+  — that highlights every occurrence of a spelling as
+  `<span class="gloss-term" data-gid="…">`, as a marked inline extension: a
+  token the parser produces, not HTML smuggled through the source. Escaping
+  of raw HTML is unaffected — it is a second `Marked` instance built per
+  distinct glossary (cached), not a relaxation of the existing one.
+- Fixes [#30](https://github.com/metanull/viewer-core/issues/30): three
+  websites built their own glossary highlighting by wrapping spellings in
+  that same span *before* handing the text to this package, which escaped it
+  like any other raw HTML the moment 1.3.0 started escaping raw HTML on
+  sight. The span was never in the record — the sites' own `glossify()` is
+  now redundant and gets deleted there.
+
 ## 1.4.0
 
 - `useDataPackage()` gains `availableLanguages(entity)`, `loadTranslations(entity, lang)`,

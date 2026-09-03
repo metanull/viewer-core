@@ -101,6 +101,16 @@ describe('the Markdown pipeline', () => {
     expect(html).not.toContain('<i>')
   })
 
+  it('escapes raw HTML in a record field even when a glossary is given', () => {
+    // The escape guarantee does not move for the glossary pipeline — it is a
+    // second Marked instance, not a second set of rules.
+    const glossary = [{ id: 'g-1', spelling: 'mithqal' }]
+    const html = renderBlock('An <i>italic</i> mithqal.', { breaks: true, glossary })
+    expect(html).toContain('&lt;i&gt;')
+    expect(html).not.toContain('<i>')
+    expect(html).toContain('<span class="gloss-term" data-gid="g-1">mithqal</span>')
+  })
+
   it('keeps a single newline as a line break only for a record', () => {
     expect(renderBlock('One\nTwo', { breaks: true })).toContain('<br>')
     expect(renderBlock('One\nTwo')).not.toContain('<br>')
@@ -114,5 +124,70 @@ describe('the Markdown pipeline', () => {
     const { app, host } = mount(Probe, i18n)
     expect(host.innerHTML).toContain('<strong>bold</strong>')
     app.unmount()
+  })
+})
+
+describe('glossary highlighting', () => {
+  // The exact case from metanull/viewer-core#30: the legacy site shows a
+  // clickable highlight, the record itself has never contained the span —
+  // it is built here, as a token the parser produces, not HTML smuggled
+  // through the source (which the escaping above still rejects on sight).
+  const glossary = [
+    { id: 'g-mithqal', spelling: 'mithqal' },
+    { id: 'g-kufic', spelling: 'kufic' },
+    { id: 'g-kufic-script', spelling: 'kufic script' },
+  ]
+
+  it('highlights a term inside emphasis, and the emphasis survives', () => {
+    const html = renderInline('An early *mithqal* weight.', { glossary })
+    expect(html).toBe(
+      'An early <em><span class="gloss-term" data-gid="g-mithqal">mithqal</span></em> weight.'
+    )
+  })
+
+  it('matches case-insensitively and only whole words', () => {
+    const html = renderInline('A Mithqal, not a mithqals.', { glossary })
+    expect(html).toContain('<span class="gloss-term" data-gid="g-mithqal">Mithqal</span>')
+    // "mithqals" contains the spelling but is not the whole word.
+    expect(html).not.toContain('data-gid="g-mithqal">mithqals')
+  })
+
+  it('prefers the longest spelling when one contains another', () => {
+    const html = renderInline('Written in kufic script here.', { glossary })
+    expect(html).toContain('<span class="gloss-term" data-gid="g-kufic-script">kufic script</span>')
+    expect(html).not.toContain('data-gid="g-kufic">')
+  })
+
+  it('leaves a term alone inside a code span', () => {
+    const html = renderInline('See `mithqal` in the source.', { glossary })
+    expect(html).toContain('<code>mithqal</code>')
+    expect(html).not.toContain('gloss-term')
+  })
+
+  it('leaves a term alone inside a link destination', () => {
+    const html = renderInline('[a weight](https://example.com/mithqal)', { glossary })
+    expect(html).toContain('href="https://example.com/mithqal"')
+    expect(html).not.toContain('gloss-term')
+  })
+
+  it('still produces <br> for a record with breaks: true', () => {
+    const html = renderBlock('A mithqal.\nAnother line.', { breaks: true, glossary })
+    expect(html).toContain('<br>')
+    expect(html).toContain('gloss-term')
+  })
+
+  it('renderInline yields no surrounding <p>', () => {
+    const html = renderInline('A mithqal.', { glossary })
+    expect(html).not.toContain('<p>')
+  })
+
+  it('does nothing when no spelling in the text matches', () => {
+    const html = renderInline('Nothing glossary-worthy here.', { glossary })
+    expect(html).not.toContain('gloss-term')
+  })
+
+  it('does nothing when the glossary list is empty', () => {
+    const html = renderInline('A mithqal.', { glossary: [] })
+    expect(html).not.toContain('gloss-term')
   })
 })
