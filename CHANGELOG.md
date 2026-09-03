@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.4.0
+
+- `useDataPackage()` gains `availableLanguages(entity)`, `loadTranslations(entity, lang)`,
+  `translations(entity, lang)` and `tr(entity, id, lang, fallbackLang)` — a shared,
+  glob-based way to lazy-load `translations/<entity>.<lang>.json` by name.
+- Four websites (carpets, amulets, water-in-islam, the-use-of-colours-in-art) had
+  already hand-rolled this same logic independently, near-identically, because
+  nothing shared provided it. Three others (islamicart, baroqueart,
+  sharinghistory) instead resolved one language — items — with
+  `` import(`.../items.${lang}.json`) ``: a dynamic import with an interpolated
+  specifier, which a bundler cannot resolve statically, so it bundles every
+  language of that entity eagerly instead of lazily loading the one requested.
+  For islamicart, whose `translations/` totals ~28 MB across 62 files, this
+  made the production build unable to finish in CI. All seven websites now
+  read translations the one way this exports.
+
 ## 1.3.0
 
 - `renderBlock` and `renderInline` take `{ breaks: true }`, for text that comes

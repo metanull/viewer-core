@@ -31,7 +31,7 @@ Required website-side Vite configuration (`vite.config.js`):
 
 | Setting | Value | Why |
 | --- | --- | --- |
-| `resolve.alias['@inventory-data']` | path to the installed `@metanull/<dataset>-data` | `useDataPackage` reads all JSON through this alias |
+| `resolve.alias['@inventory-data']` | path to the installed `@metanull/<dataset>-data` | `useDataPackage` reads all JSON (entities and `translations/`) through this alias |
 | `optimizeDeps.exclude` | `['@metanull/viewer-core']` | the package ships `.vue` source; esbuild pre-bundling cannot parse it |
 | plugin | `@vitejs/plugin-vue` | compiles the shipped `.vue` views |
 
@@ -165,6 +165,18 @@ right-to-left language renders right to left.
 | `languages` | string[] | `manifest.languages`, default `['en']` |
 | `entityNames` | string[] | one entry per `<entity>.json` file |
 | `loadEntity(name)` | `Promise<Array>` | lazy-loads and returns the records of one entity |
+| `availableLanguages(entity)` | string[] | languages `translations/<entity>.<lang>.json` actually exists for |
+| `loadTranslations(entity, lang)` | `Promise<object>` | lazy-loads `translations/<entity>.<lang>.json` (id → translated fields); `{}` if the file is absent. Cached. |
+| `translations(entity, lang)` | object | the already-loaded map for that pair; `{}` if not loaded yet |
+| `tr(entity, id, lang, fallbackLang = 'en')` | object | one record's translated fields, falling back to `fallbackLang` then `{}` — reads only what's already loaded |
+
+Always resolve a per-language file by name through `loadTranslations`/`translations`/`tr` —
+never `import(\`...${lang}...\`)`. A dynamic import with an interpolated
+specifier can't be resolved statically, so the bundler falls back to bundling
+every language of that entity eagerly instead of Vite's dedicated glob-import
+path; for a dataset with a large or many-language translation set this can
+turn a several-second build into a build that hangs for hours in CI — this is
+what made islamicart's production build unable to finish.
 
 ### Views
 
@@ -195,6 +207,7 @@ structural rules only. It consumes CSS custom properties and never defines brand
 | --- | --- |
 | `manifest.json` | at least `{ "languages": ["en", ...] }` |
 | `<entity>.json` | array of records; each record has an `id`, optional `title`/`name`, other fields free-form (strings may contain markdown) |
+| `translations/<entity>.<lang>.json` | optional; object keyed by record `id`, each value the record's translated fields for `<lang>`. A file is simply absent when that entity has no translation in that language. |
 
 ## Release procedure
 
