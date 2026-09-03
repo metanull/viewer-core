@@ -128,6 +128,16 @@ createViewer({ ...config, messages: mergeMessages(catalogues, local) }).mount('#
 | `<I18nTextInline keypath tag="span">` | the same, without the surrounding paragraph |
 | `mergeMessages(...catalogues)` | the merge rule above |
 | `negotiateLanguage`, `isRtl` | the language rules, for a website that needs them directly |
+| `renderBlock(text, { breaks, glossary })`, `renderInline(text, { breaks, glossary })` | the Markdown pipeline `I18nText`/`I18nTextInline` render through, for a website that needs it directly (a data-package field, not a text) |
+
+`renderBlock`/`renderInline`'s optional `glossary` — `[{ id, spelling }]`, one
+entry per spelling of each of a record's glossary words in the active
+language — highlights every occurrence as
+`<span class="gloss-term" data-gid="…">`, case-insensitively, whole words
+only, longest spelling winning when one contains another. It is a token the
+parser produces, not HTML in the source: the escaping below still applies to
+everything else in the text, code spans and link destinations are left alone,
+and an empty or omitted `glossary` costs nothing extra.
 
 A package that needs only the text runtime — `@metanull/viewer-layout` is the
 one — imports it from `@metanull/viewer-core/i18n` instead of the package root.
