@@ -247,9 +247,10 @@ keeps no copy of the records: it reads them through here.
 
 ```js
 import { computed } from 'vue'
-import { useEntities } from '@metanull/viewer-core'
+import { entityRef } from '@metanull/viewer-core'
 
-export const { items, partners, ready } = useEntities(['items', 'partners'])
+export const items = entityRef('items')
+export const partners = entityRef('partners')
 export const itemById = computed(() => new Map((items.value ?? []).map((i) => [i.id, i])))
 ```
 
@@ -260,6 +261,7 @@ export const itemById = computed(() => new Map((items.value ?? []).map((i) => [i
 | `loaded` | the same, as a boolean |
 | `byId(name, key = 'id')` | a cached `computed` Map of the records by `key` |
 | `loadEntities(names)` | the load itself, for a route guard or a resolver |
+| `entityRef(name)` | the shared ref alone, loading nothing — what a data composable exports at module level, so that importing it costs nothing and the routes that read an entity are the ones that declare it |
 
 A route that declares `meta: { entities: ['items'] }` has them loaded by the
 router before its view is created, so the view never sees `null`; until the

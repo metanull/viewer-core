@@ -1,6 +1,6 @@
 export { createViewer } from './createViewer.js'
 export { useDataPackage } from './composables/useDataPackage.js'
-export { byId, loadEntities, useEntities } from './composables/useEntities.js'
+export { byId, entityRef, loadEntities, useEntities } from './composables/useEntities.js'
 export { resolveRecordLanguage, useRecordLanguage } from './composables/useRecordLanguage.js'
 export { createI18n, mergeMessages, useI18n, useLocale } from './i18n/index.js'
 export { isRtl, negotiateLanguage } from './i18n/language.js'

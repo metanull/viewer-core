@@ -21,6 +21,17 @@ function refFor(name) {
 }
 
 /**
+ * The shared ref of one entity, without asking for its load — `null` until a
+ * route's `meta.entities` or `loadEntities` brings the chunk in. This is what
+ * a website's data composable exports at module level, so that importing the
+ * composable loads nothing: the pages that read an entity are the ones that
+ * declare it.
+ */
+export function entityRef(name) {
+  return refFor(name)
+}
+
+/**
  * Load the named entities, once each. Resolves with their records in the
  * order asked for; a name the package does not have rejects, as `loadEntity`
  * does.

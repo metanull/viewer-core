@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { byId, loadEntities, useEntities } from '../src/index.js'
+import { byId, entityRef, loadEntities, useEntities } from '../src/index.js'
+
+describe('entityRef', () => {
+  it('hands out the shared ref without loading anything', async () => {
+    const before = entityRef('places')
+    expect(before.value).toBeNull()
+    expect(before).toBe(useEntities(['places']).places)
+    await loadEntities(['places'])
+    expect(before.value).toHaveLength(2)
+  })
+})
 
 describe('useEntities', () => {
   it('hands out one shared ref per entity, null until the chunk arrives', async () => {
