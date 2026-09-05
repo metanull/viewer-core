@@ -14,13 +14,20 @@ import NotFoundView from '../views/NotFoundView.vue'
 /**
  * Where the page is after a navigation: where it was when the visitor comes
  * back through history; at the anchor when the URL names one; where it is
- * when only the query of the same page changed (another page of the same
- * list, another filter); at the top otherwise.
+ * when only a filter of the same page changed; at the top otherwise —
+ * including a change of `page`, which is a new page of results and is read
+ * from the beginning, and including the language, which re-renders
+ * everything.
  */
 export function defaultScrollBehavior(to, from, savedPosition) {
   if (savedPosition) return savedPosition
   if (to.hash) return { el: to.hash, behavior: 'smooth' }
-  if (from.name !== undefined && to.name === from.name && sameParams(to.params, from.params)) {
+  if (
+    from.name !== undefined &&
+    to.name === from.name &&
+    sameParams(to.params, from.params) &&
+    String(to.query.page ?? '') === String(from.query.page ?? '')
+  ) {
     return false
   }
   return { top: 0 }

@@ -83,27 +83,39 @@ describe('entity preloading', () => {
 })
 
 describe('defaultScrollBehavior', () => {
-  const list = { name: 'list', params: {}, hash: '' }
+  const list = { name: 'list', params: {}, query: {}, hash: '' }
 
   it('restores the position when the visitor comes back through history', () => {
-    expect(defaultScrollBehavior({ ...list }, { name: 'home', params: {} }, { top: 300 })).toEqual({ top: 300 })
-  })
-
-  it('goes to the anchor the URL names', () => {
-    expect(defaultScrollBehavior({ ...list, hash: '#section' }, { name: 'home', params: {} }, null)).toEqual({
-      el: '#section',
-      behavior: 'smooth',
+    expect(defaultScrollBehavior({ ...list }, { name: 'home', params: {}, query: {} }, { top: 300 })).toEqual({
+      top: 300,
     })
   })
 
-  it('stays put when only the query of the same page changed', () => {
-    expect(defaultScrollBehavior({ ...list }, { ...list }, null)).toBe(false)
+  it('goes to the anchor the URL names', () => {
+    expect(
+      defaultScrollBehavior({ ...list, hash: '#section' }, { name: 'home', params: {}, query: {} }, null),
+    ).toEqual({ el: '#section', behavior: 'smooth' })
+  })
+
+  it('stays put when only a filter of the same page changed', () => {
+    expect(defaultScrollBehavior({ ...list, query: { country: 'jo' } }, { ...list }, null)).toBe(false)
+  })
+
+  it('goes to the top for another page of the same list', () => {
+    expect(defaultScrollBehavior({ ...list, query: { page: '2' } }, { ...list }, null)).toEqual({ top: 0 })
+    expect(
+      defaultScrollBehavior({ ...list, query: { page: '1' } }, { ...list, query: { page: '2' } }, null),
+    ).toEqual({ top: 0 })
   })
 
   it('goes to the top when the page changes', () => {
-    expect(defaultScrollBehavior({ ...list }, { name: 'home', params: {} }, null)).toEqual({ top: 0 })
+    expect(defaultScrollBehavior({ ...list }, { name: 'home', params: {}, query: {} }, null)).toEqual({ top: 0 })
     expect(
-      defaultScrollBehavior({ name: 'thing', params: { id: '2' } }, { name: 'thing', params: { id: '1' } }, null),
+      defaultScrollBehavior(
+        { name: 'thing', params: { id: '2' }, query: {} },
+        { name: 'thing', params: { id: '1' }, query: {} },
+        null,
+      ),
     ).toEqual({ top: 0 })
   })
 })
