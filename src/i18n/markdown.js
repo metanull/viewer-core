@@ -140,3 +140,57 @@ export function renderBlock(text, { breaks = false, glossary } = {}) {
 export function renderInline(text, { breaks = false, glossary } = {}) {
   return engineFor(breaks, glossary).parseInline(String(text ?? ''))
 }
+
+// Plain text is read off the token tree the same parser produces, never by
+// rewriting the source with a regex: what a Markdown text says is what its
+// tokens say. Raw HTML is dropped, since it was never content; an image is
+// its alt text; a break is a space.
+const BLOCKS = new Set(['paragraph', 'heading', 'blockquote', 'list', 'list_item', 'code', 'table', 'hr', 'html'])
+
+const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' }
+function decodeEntities(text) {
+  return text.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (match, entity) => {
+    if (entity[0] === '#') {
+      const code =
+        entity[1].toLowerCase() === 'x' ? parseInt(entity.slice(2), 16) : parseInt(entity.slice(1), 10)
+      return Number.isFinite(code) ? String.fromCodePoint(code) : match
+    }
+    return ENTITIES[entity.toLowerCase()] ?? match
+  })
+}
+
+function plainText(tokens) {
+  let out = ''
+  for (const token of tokens ?? []) {
+    switch (token.type) {
+      case 'html':
+        break
+      case 'image':
+        out += token.text ?? ''
+        break
+      case 'br':
+      case 'space':
+        out += ' '
+        break
+      case 'list':
+        out += plainText(token.items)
+        break
+      case 'table':
+        out += plainText(token.header)
+        for (const row of token.rows ?? []) out += plainText(row)
+        break
+      default:
+        if (token.tokens?.length) out += plainText(token.tokens)
+        else out += token.text ?? ''
+    }
+    if (BLOCKS.has(token.type)) out += ' '
+  }
+  return out
+}
+
+/** A text as plain text — for an `alt`, a `title`, an option label, a sort key. */
+export function renderPlain(text) {
+  return decodeEntities(plainText(record.lexer(String(text ?? ''))))
+    .replace(/\s+/g, ' ')
+    .trim()
+}

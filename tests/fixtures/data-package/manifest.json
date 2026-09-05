@@ -1,4 +1,12 @@
 {
   "dataset": "fixture",
-  "languages": ["en", "fr"]
+  "languages": ["en", "fr", "de"],
+  "site": {
+    "languages": [
+      { "code": "fr", "label": "Français" },
+      { "code": "en", "label": "English" },
+      { "code": "de", "label": "Deutsch" }
+    ],
+    "names": { "en": "Fixture Museum", "fr": "Musée fictif" }
+  }
 }

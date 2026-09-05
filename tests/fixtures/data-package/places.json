@@ -1,0 +1,4 @@
+[
+  { "id": "p1", "name": "Somewhere", "languages": ["fr", "ar"] },
+  { "id": "p2", "name": "Elsewhere" }
+]

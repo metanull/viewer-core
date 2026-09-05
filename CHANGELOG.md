@@ -1,5 +1,35 @@
 # Changelog
 
+## 1.6.0
+
+The alignment pass (metanull/inventory-app#1683): one architecture for every
+website, provided here so no site has to build its own.
+
+- `useEntities(names)` / `loadEntities` / `byId` (#32): the standard way a
+  website reads its records — one shared ref per entity, `null` until its
+  chunk arrives, one cache. A route declaring `meta.entities` has them
+  loaded before its view is created; the page shows `core.status.loading`
+  until the first route has resolved. `import … from '@inventory-data/…'`
+  in site code is forbidden.
+- `useRecordLanguage(record)` (#33): the record language, independent of the
+  site language — site language, then English, then the record's first;
+  a transient toggle that never touches the URL or the site language; `dir`.
+- `renderPlain(text)` (#34), next to `renderBlock`/`renderInline`, and the
+  Markdown tests the seven websites carried, moved here. `marked` stops
+  being a site dependency. The three renderers are also exported from
+  `@metanull/viewer-core/i18n`.
+- The routing convention (#35): a default `scrollBehavior`, redirect-only
+  `config.legacyRoutes`, `NotFoundView` on a `/:pathMatch(.*)*` catch-all
+  (`config.notFound` to replace it or leave it out). `NotFoundView` reads
+  `core.notFound.page`, published in viewer-i18n 1.6.0.
+- `offeredLanguages()` and `languageLabels()` (#36): the one rule deciding
+  what a website offers, read from `manifest.site.languages`; the shared
+  check `checkOfferedLanguages` on the new `@metanull/viewer-core/testing`
+  entry point.
+- `config.media` and `config.links` (#37), `useSiteConfig()` and
+  `mediaUrl(path, size)`: no site reads `import.meta.env` or carries an
+  address outside `dataset.config.js`.
+
 ## 1.5.0
 
 - `renderBlock`/`renderInline` gain an optional `glossary` — `[{ id, spelling }]`
