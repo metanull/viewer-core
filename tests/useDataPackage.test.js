@@ -5,14 +5,14 @@ describe('useDataPackage', () => {
   it('exposes the manifest and language list', () => {
     const { manifest, languages } = useDataPackage()
     expect(manifest.dataset).toBe('fixture')
-    expect(languages).toEqual(['en', 'fr'])
+    expect(languages).toEqual(['en', 'fr', 'de'])
   })
 
   it('lists entities without the manifest or npm metadata', () => {
     const { entityNames } = useDataPackage()
     // The fixture directory contains package.json, like every installed
     // npm package — it must not surface as an entity.
-    expect(entityNames).toEqual(['things'])
+    expect(entityNames).toEqual(['places', 'things'])
   })
 
   it('lazy-loads entity records', async () => {

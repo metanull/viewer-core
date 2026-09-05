@@ -1,6 +1,6 @@
 {
   "name": "@metanull/viewer-core",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Application engine for MWNF websites: turns a dataset.config.js into a mounted Vue application.",
   "type": "module",
   "license": "UNLICENSED",
@@ -19,6 +19,7 @@
   "exports": {
     ".": "./src/index.js",
     "./i18n": "./src/i18n/index.js",
+    "./testing": "./src/testing/index.js",
     "./styles/base.css": "./src/styles/base.css"
   },
   "sideEffects": [
