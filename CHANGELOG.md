@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.7.0
+
+### Removed
+
+- The `vue-i18n` bridge and the `vue-i18n` peer dependency (#38). Since 1.2.0
+  nothing in this package read its texts through vue-i18n; the library stayed
+  installed only because `@metanull/viewer-layout` 1.x and a handful of website
+  views still called its `useI18n()`. Those are all migrated now, so the bridge
+  module, the `app.use()` call and the locale watch that kept the two in step
+  are gone.
+
+  **Breaking for anything that still calls vue-i18n.** An application built
+  with `createViewer` no longer installs it, so a component reading
+  `useI18n()` from `vue-i18n` throws instead of falling back. Import
+  `useI18n` from `@metanull/viewer-core` — the same `{ locale, t }` shape,
+  minus interpolation and pluralisation, which this platform does not have.
+  `$t` in a template is unaffected: it has been this package's own since 1.2.0.
+
+  Websites keep `vue-i18n` in their own `package.json` only if their own code
+  still imports it; none of the seven does.
+
 ## 1.6.0
 
 The alignment pass (metanull/inventory-app#1683): one architecture for every

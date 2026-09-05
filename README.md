@@ -7,10 +7,9 @@ into a mounted Vue application (router, i18n, data access, shared views).
 Stack: Vue 3, Vue Router (hash history), Vite, Vitest. Distributed as raw
 ESM source; the website's Vite build compiles it.
 
-Texts are handled here, without an i18n library: see [Texts](#texts). `vue-i18n`
-is still installed as a peer dependency, and nothing in this package uses it —
-it is there for `@metanull/viewer-layout` 1.x and for website views that have
-not migrated yet, and goes away with them.
+Texts are handled here, without an i18n library: see [Texts](#texts). Nothing in
+the platform depends on `vue-i18n` any more, and this package no longer asks for
+it.
 
 ## Install
 
@@ -24,7 +23,7 @@ Published to GitHub Packages (authentication is always required, even to downloa
 ```
 
 ```bash
-npm install @metanull/viewer-core vue vue-router vue-i18n
+npm install @metanull/viewer-core vue vue-router
 ```
 
 Required website-side Vite configuration (`vite.config.js`):
