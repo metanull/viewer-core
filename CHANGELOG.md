@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.7.1
+
+### Fixed
+
+- `checkOfferedLanguages(config, { declared })` accepts the same narrowing
+  `offeredLanguages({ declared })` does. The two helpers were meant to apply
+  one rule, but the check only knew the package's declaration, so a website
+  that narrows it — Sharing History offers English where its package declares
+  English and French — failed its own language test the moment its package
+  started declaring site languages. Found by the first data packages that
+  carry `manifest.site` (inventory-app#1685).
+- `offeredLanguages({ declared })` narrows the package's declaration and no
+  longer widens it: a code the website lists that the package does not declare
+  for the site is dropped, as the documentation already said it was.
+
 ## 1.7.0
 
 ### Removed

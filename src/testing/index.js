@@ -1,5 +1,5 @@
 import { useDataPackage } from '../composables/useDataPackage.js'
-import { declaredSiteLanguages } from '../languages.js'
+import { declaredSiteLanguages, offeredLanguages } from '../languages.js'
 
 // One check of a website's language declaration, shared by every website so
 // that the rule is tested once rather than rewritten seven times. It returns
@@ -11,11 +11,19 @@ import { declaredSiteLanguages } from '../languages.js'
  * data package: only languages with item content are offered; the order is
  * the package's declared order; every offered language has a label, and the
  * switcher lists exactly the offered languages.
+ *
+ * A website that narrows the package's declaration passes the same `declared`
+ * list it gave `offeredLanguages()`, so the check expects the narrowed set —
+ * the two helpers apply one rule, and a website that narrows in the config
+ * but not in the test would otherwise be told its own list is wrong.
  */
-export function checkOfferedLanguages(config, { entity = 'items', manifest, availableLanguages } = {}) {
+export function checkOfferedLanguages(
+  config,
+  { declared, entity = 'items', manifest, availableLanguages } = {},
+) {
   const pkg = useDataPackage()
   const withContent = (availableLanguages ?? pkg.availableLanguages)(entity)
-  const declared = declaredSiteLanguages(manifest ?? pkg.manifest)
+  const fromPackage = declaredSiteLanguages(manifest ?? pkg.manifest)
   const offered = config?.languages ?? []
   const problems = []
 
@@ -27,11 +35,12 @@ export function checkOfferedLanguages(config, { entity = 'items', manifest, avai
       problems.push(`"${code}" is offered but no ${entity} carry it.`)
     }
   }
-  if (declared) {
-    const expected = declared.filter((code) => withContent.includes(code))
+  if (declared || fromPackage) {
+    const expected = offeredLanguages({ declared, entity, manifest, availableLanguages })
     if (offered.join(',') !== expected.join(',')) {
+      const source = declared ? 'the website narrows the package to' : 'the package declares'
       problems.push(
-        `The offered languages are [${offered.join(', ')}] where the package declares [${expected.join(', ')}].`,
+        `The offered languages are [${offered.join(', ')}] where ${source} [${expected.join(', ')}].`,
       )
     }
   } else {
