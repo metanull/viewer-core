@@ -1,4 +1,5 @@
 import { watch } from 'vue'
+import { START_LOCATION } from 'vue-router'
 
 // Which language a visitor gets, decided once, in one place.
 //
@@ -106,13 +107,18 @@ export function connectLanguageToRouter({ locale, offered, router }) {
     return true
   })
 
+  // A change of language from the switcher rewrites the URL. Not before the
+  // first navigation has resolved, though: the router is then still at its
+  // start location, `/`, and a replace from there cancels the navigation the
+  // visitor arrived with — every deep link landed on the home page. The guard
+  // above puts the language in the URL of that first navigation itself.
   watch(
     locale,
     (code) => {
       applyDocumentLanguage(code)
       storeLanguage(code)
       const current = router.currentRoute.value
-      if (multilingual && current.query.lang !== code) {
+      if (multilingual && current !== START_LOCATION && current.query.lang !== code) {
         router.replace({ query: { ...current.query, lang: code } })
       }
     },

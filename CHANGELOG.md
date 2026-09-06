@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.9.1
+
+### Fixed
+
+- A deep link opened the home page. On a multilingual website the language
+  watcher rewrote the URL with `?lang=` from the router's start location,
+  `/`, before the navigation the visitor arrived with had resolved, and that
+  replace cancelled it: `#/timeline` landed on `#/?lang=en`, on every
+  website, from every bookmark and every shared link. The watcher now leaves
+  the router alone until the first navigation is through — the guard already
+  puts the language in that navigation's URL. Found by the template's test of
+  the composed pages, which mounts a website on the page under test.
+
 ## 1.9.0
 
 Wave E of the shared-pages epic (metanull/inventory-app#1691), this
