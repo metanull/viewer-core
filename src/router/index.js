@@ -65,20 +65,41 @@ function legacyRoute({ path, resolve, name }, index) {
   }
 }
 
+/**
+ * The three slots every website has — the home page, a list page, a record
+ * page — and what renders them. The generic views are the defaults: a plain
+ * list of entity names, a paginated list of records, a record's fields,
+ * enough to look at a new dataset. A website names the real pages in
+ * `config.views` (`{ home, list, detail }`), typically the composed views of
+ * `@metanull/viewer-layout/views`, and the same route names then render
+ * them: `home` for `/`, `<entity>-list` and `<entity>-detail` for every
+ * entity `features.entities` publishes. A component a site registers on the
+ * `home` name in `extraViews` still wins — the escape hatch stays open.
+ */
+export function resolveViews(config = {}) {
+  return {
+    home: HomeView,
+    list: ListView,
+    detail: DetailView,
+    ...Object.fromEntries(Object.entries(config.views ?? {}).filter(([, view]) => view)),
+  }
+}
+
 export function createViewerRouter(config = {}) {
-  const routes = [{ path: '/', name: 'home', component: HomeView }]
+  const views = resolveViews(config)
+  const routes = [{ path: '/', name: 'home', component: views.home }]
 
   for (const entity of config.features?.entities ?? []) {
     routes.push({
       path: `/${entity}`,
       name: `${entity}-list`,
-      component: ListView,
+      component: views.list,
       props: { entity },
     })
     routes.push({
       path: `/${entity}/:id`,
       name: `${entity}-detail`,
-      component: DetailView,
+      component: views.detail,
       props: (route) => ({ entity, id: route.params.id }),
     })
   }

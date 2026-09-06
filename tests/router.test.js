@@ -15,6 +15,20 @@ describe('createViewerRouter', () => {
     expect(names).not.toContain('others-list')
   })
 
+  it('renders the three slots with the views a website names', () => {
+    const Home = { template: '<p>Composed home</p>' }
+    const List = { props: ['entity'], template: '<p>Composed list</p>' }
+    const router = createViewerRouter({
+      features: { entities: ['things'] },
+      views: { home: Home, list: List, detail: undefined },
+    })
+    const byName = Object.fromEntries(router.getRoutes().map((r) => [r.name, r]))
+    expect(byName.home.components.default).toBe(Home)
+    expect(byName['things-list'].components.default).toBe(List)
+    // A slot left out, or set to nothing, keeps the generic view.
+    expect(byName['things-detail'].components.default.name ?? byName['things-detail'].components.default.__name).toBe('DetailView')
+  })
+
   it('registers extraViews', () => {
     const About = { template: '<p>About</p>' }
     const router = createViewerRouter({

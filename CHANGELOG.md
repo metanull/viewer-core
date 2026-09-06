@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.9.0
+
+Wave E of the shared-pages epic (metanull/inventory-app#1691), this
+package's part (#50). Additive.
+
+### Added
+
+- `config.views = { home, list, detail }`: the components that render the
+  three slots every website has — `/`, and the `<entity>-list` /
+  `<entity>-detail` routes `features.entities` publishes — in place of the
+  generic `HomeView`, `ListView` and `DetailView`, which stay the defaults
+  and the tools for looking at a new dataset. The composed views a website
+  names there are `@metanull/viewer-layout/views`: they are made of that
+  package's components on this package's composables, and this package does
+  not depend on the layout, which is why they are not here. `resolveViews`
+  answers what a configuration resolves to.
+
 ## 1.8.0
 
 Wave B of the shared-pages epic (metanull/inventory-app#1691): the engine of
