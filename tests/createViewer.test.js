@@ -11,8 +11,8 @@ const config = {
 
 beforeEach(() => localStorage.clear())
 
-async function mountViewer() {
-  window.location.hash = '#/'
+async function mountViewer(hash = '#/') {
+  window.location.hash = hash
   const app = createViewer(config)
   const host = document.createElement('div')
   app.mount(host)
@@ -49,6 +49,18 @@ describe('createViewer', () => {
     const { app, host, router } = await mountViewer()
     await router.push('/things/999')
     await vi.waitFor(() => expect(host.innerHTML).toContain('This record does not exist.'))
+    app.unmount()
+  })
+
+  it('opens on the page a deep link names, with the language added', async () => {
+    // What a visitor arriving from a bookmark or a shared link gets. The
+    // language watcher used to rewrite the URL from the router's start
+    // location before the first navigation resolved, and every deep link
+    // landed on the home page.
+    const { app, host, router } = await mountViewer('#/things/1')
+    await vi.waitFor(() => expect(router.currentRoute.value.path).toBe('/things/1'))
+    expect(router.currentRoute.value.query.lang).toBe('en')
+    await vi.waitFor(() => expect(host.innerHTML).toContain('<strong>bold</strong>'))
     app.unmount()
   })
 
