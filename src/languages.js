@@ -14,12 +14,24 @@ export function declaredSiteLanguages(manifest) {
  * `declared ∩ availableLanguages(entity)`, in the declared order. `declared`
  * defaults to `manifest.site.languages`; a package that carries no such list
  * offers every language its items have content in, alphabetically.
+ *
+ * A website may pass its own `declared` list to narrow what the package
+ * declares — a language that covers a handful of item sheets is worse than no
+ * switcher — but never to widen it: a code the package does not declare for
+ * this site is dropped even where some items carry it. That keeps the
+ * decision of which languages a site *can* offer in the package, and only the
+ * decision of which of those it *does* offer in the site.
  */
 export function offeredLanguages({ declared, entity = 'items', manifest, availableLanguages } = {}) {
   const pkg = useDataPackage()
   const withContent = (availableLanguages ?? pkg.availableLanguages)(entity)
-  const list = declared ?? declaredSiteLanguages(manifest ?? pkg.manifest)
-  if (!list) return [...withContent].sort()
+  const fromPackage = declaredSiteLanguages(manifest ?? pkg.manifest)
+  if (!declared && !fromPackage) return [...withContent].sort()
+  const list = declared
+    ? fromPackage
+      ? declared.filter((code) => fromPackage.includes(code))
+      : declared
+    : fromPackage
   return list.filter((code) => withContent.includes(code))
 }
 

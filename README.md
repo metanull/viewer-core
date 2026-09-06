@@ -201,7 +201,7 @@ export default {
 
 | Export | Meaning |
 | --- | --- |
-| `offeredLanguages({ declared?, entity = 'items' })` | `declared ∩ availableLanguages(entity)`, in the declared order; `declared` defaults to `manifest.site.languages`. A package that declares none offers every language its items have content in, alphabetically. |
+| `offeredLanguages({ declared?, entity = 'items' })` | `declared ∩ availableLanguages(entity)`, in the declared order; `declared` defaults to `manifest.site.languages`, and a website's own `declared` can only narrow that list, never widen it. A package that declares none offers every language its items have content in, alphabetically. |
 | `languageLabels(codes)` | `[{ code, label }]` for the switcher, the label from the manifest and the code in capitals where there is none |
 
 The rule is tested once, by the helper every website runs in its own suite:
@@ -213,7 +213,9 @@ expect(checkOfferedLanguages(config)).toEqual([])
 
 It reports every offered language without item content, an order that is
 not the declared one, a switcher that lists something else, and a language
-without a label.
+without a label. A website that narrows the package's declaration passes the
+same list to the check — `checkOfferedLanguages(config, { declared })` — so
+that it is held to the rule it actually applies.
 
 ### Record language
 
