@@ -1,0 +1,6 @@
+{
+  "o1": { "name": "Glazed *bowl*", "description": "A bowl in kufic script.", "type": "Ceramic", "author": "A. Author", "location": "Cairo" },
+  "o2": { "name": "Mosque lamp", "description": "A glass lamp with an inscription.", "type": "Glass", "location": "Damascus" },
+  "o3": { "name": "Fragment", "description": "A kufic fragment.", "type": "Ceramic" },
+  "o4": { "name": "Iznik tile", "description": "A tile.", "type": "Ceramic", "author": "B. Author" }
+}

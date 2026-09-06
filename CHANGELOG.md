@@ -1,5 +1,43 @@
 # Changelog
 
+## 1.8.0
+
+Wave B of the shared-pages epic (metanull/inventory-app#1691): the engine of
+the list pages and the record page, written once. Additive — nothing a
+website has changes; the composables exist for the websites to move onto.
+
+### Added
+
+- **List pages** (#42–#46). `useListQuery` — filters and page bound to the
+  route query, encoding the routing convention once (eleven views wrote it by
+  hand). `paginate` / `usePagination` / `sortChronological` — the DXA page
+  shape, which `ListView` now uses too. `facetOptions` / `useFacets` — option
+  lists from whatever records the caller hands over, so the standalone rule
+  (all records) and the DXA rule (the matching subset) stay the caller's
+  choice. `inDateRange` / `dateRange` with the two legacy date rules named,
+  `overlap` and `contain`, and a test that pins where they disagree;
+  `yearBuckets` / `yearBucketsFromRange` carried verbatim from four copies,
+  reading `catalogue.era.*`; `eraLabel`, `roundOutward`. `useKeywordIndex`
+  — the field grammar of `database.php` and the boolean full-text grammar of
+  the DXA sites under one interface, with the haystack cache invalidated when
+  a language's translations change.
+- **Record pages** (#48, #49). `useRecordSheet` — on top of
+  `useRecordLanguage`: the loads every sheet performs (the record's entity and
+  the related entities it names, in the active language *and* in English, so
+  the fallback is loaded rather than assumed), `text`, `ready`, the glossary
+  terms and the spelling list for the renderers, and an attribution fallback
+  across languages for credits the importer filed on one row only.
+  `sheetRows` — the field engine: a spec of `{ key, label, value, render,
+  when }` in, rendered rows without empties out; the spec stays the site's.
+  `useGlossaryPopup`, `searchGlossary`, `citation`, `relatedRecords` /
+  `useRelatedRecords`, `timelineLinkFor`.
+- **Conventions** (#47). `projectName` / `useProjectName` / `PROJECT_ENTRIES`
+  over `core.project.*`; `meta.section` on a route and `useSection()` to read
+  it; `useFeaturedRecord` for a landing page's spotlight.
+- Fixture: an `objects` entity with dates, a country, tags, images, glossary
+  ids and related items, and a `glossary` entity with spellings in two
+  languages, so the engine is tested against records shaped like a site's.
+
 ## 1.7.1
 
 ### Fixed

@@ -2,6 +2,7 @@
 import { computed, ref, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 import { useDataPackage } from '../composables/useDataPackage.js'
+import { paginate } from '../catalogue/pagination.js'
 
 const props = defineProps({
   entity: { type: String, required: true },
@@ -16,15 +17,12 @@ watchEffect(async () => {
   records.value = await loadEntity(props.entity)
 })
 
-const page = computed(() => Math.max(1, Number.parseInt(route.query.page, 10) || 1))
-const totalPages = computed(() =>
-  records.value ? Math.max(1, Math.ceil(records.value.length / props.pageSize)) : 1
-)
-const pageRecords = computed(() =>
-  records.value
-    ? records.value.slice((page.value - 1) * props.pageSize, page.value * props.pageSize)
-    : []
-)
+// The same page arithmetic every website's lists use, so this generic list
+// and a site's results page cannot disagree on where page 3 starts.
+const paged = computed(() => paginate(records.value ?? [], route.query.page, props.pageSize))
+const page = computed(() => paged.value.currentPage)
+const totalPages = computed(() => paged.value.lastPage)
+const pageRecords = computed(() => paged.value.rows)
 
 function labelOf(record) {
   return record.title ?? record.name ?? record.label ?? record.id
