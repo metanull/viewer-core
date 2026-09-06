@@ -268,6 +268,49 @@ A route that declares `meta: { entities: ['items'] }` has them loaded by the
 router before its view is created, so the view never sees `null`; until the
 first route has resolved, the page shows `core.status.loading`.
 
+### List pages
+
+The engine of a results page — what every website's browse and search
+pages do before they render a row. Behaviour only; the controls and rows are
+viewer-layout's, and which filters exist, in what order, with what labels,
+is the site's.
+
+| Export | Meaning |
+| --- | --- |
+| `useListQuery({ keys, page = true })` | `{ filters, page, active, apply(patch), reset(), goToPage(n) }` — filters and page bound to the route query. Encodes the routing convention once: filters in the query, `page` dropped when 1, `push` for a filter change (a new place in history), `replace` for a page change, page back to 1 when a filter changes; navigates on the current route by name. Query parameters the page does not own (`lang`) travel untouched. |
+| `paginate(list, page, size = 20)` | `{ total, lastPage, currentPage, from, to, rows }`; a page past the end clamps. The size is the site's: twenty on the standalone sites, nine on the DXA sites. |
+| `usePagination(list, { page, size })` | the same over reactive sources |
+| `sortChronological(list, { key = 'start_date', undated = 'last' })` | a new array, by year, undated last |
+| `facetOptions(records, spec)` / `useFacets(records, spec)` | `{ [facet]: [{ value, label }] }` — the values the records in front of the filter carry, labelled by the site's own helper, sorted. A facet is `{ field }` or `{ values(record) }`, plus `label(value)`, `include(value)`, `sort` (`'label'`, a comparator, `'none'`), `capitalize`. Pass all records for options that never narrow (the standalone rule) or the matching subset for dependent facets (the DXA rule); the helper reads what it is handed. |
+| `inDateRange(record, { begin, end, mode })` / `dateRange(list, …)` | the two legacy date rules, named and never merged: `'overlap'` (Islamic Art, Baroque Art, Sharing History — a record whose span touches the window, tolerating one date) and `'contain'` (the DXA sites — a record whose span lies inside it; an undated record is out). A site names its mode once. |
+| `yearBuckets(records, t)` / `yearBucketsFromRange(min, max, t)` | the legacy era buckets (`[{ value, label }]`, coarser the further back), whose values are in shareable URLs and therefore reproduced rather than improved; `t` supplies `catalogue.era.*` |
+| `eraLabel(year, t)`, `roundOutward(start, end)` | "1193 AD" / "502 BC"; a record's dates rounded outward to the century |
+| `useKeywordIndex(entity, { grammar, fields, haystack, language })` | `{ search, reset }` — the two search engines under one interface. `grammar: 'fields'`: `fields` maps a field name to `(record, text) => string \| string[]`, `search([{ field, keyword, cond }])` folds the rows with AND/OR (the `database.php` form). `grammar: 'boolean'`: `haystack(record, text)` returns the strings searched, `search('+word -word word* "a phrase"')` ranks by the legacy full-text grammar. `language` is the translation the text is read in. Every value is read as plain text through the pipeline; haystacks are cached per record and language and dropped when that language's translations change. |
+
+### Record pages
+
+The engine of a record page, on top of `useRecordLanguage`. The field list
+is the site's — `sheetRows` turns a spec into rows — and the components are
+viewer-layout's.
+
+| Export | Meaning |
+| --- | --- |
+| `useRecordSheet(record, { entity, translations, attribution })` | what `useRecordLanguage` returns, plus `text` (the record's translation in the active language, falling back to English), `ready` (the entity and every named related entity loaded, in the active language and in English), `terms` (`[{ id, word, definition, spellings }]` for the record's `glossary_ids`, in the active language), `glossary` (the `[{ id, spelling }]` list the renderers take) and `attribution` — when `attribution: ['author', 'copy_editor']` names fields that are proper names, the first other language of the record that has them supplies them (`{ from, author, … }`), because the importer files some records' credits on one language only. |
+| `sheetRows(spec, ctx)` | `[{ key, label, render, value, html }]` from `[{ key, label, value, render, when, join }]`: `value` a function of `ctx` or the name of a field of `ctx.text`; `render` one of `inline`, `block`, `plain` (through the pipeline, with `ctx.glossary`), `link`, `custom` (handed back for a slot); `when(ctx)` gates the row; empty values are dropped. "Materials/techniques" on one site and "Type" on another for the same field are both legacy facts, and both are a spec entry. |
+| `useGlossaryPopup(entries)` | `{ active, onClick, close }` — one delegated click on the sheet's container answers the term rendered as `.gloss-term` |
+| `searchGlossary(input, language)` | the terms whose spelling starts with the input, for a glossary search box |
+| `citation({ author, name, project, publisher, year, permalink, inWord })` | the sentence under a sheet, assembled from parts in order rather than written into a text with holes |
+| `relatedRecords(record, { entity, language })` / `useRelatedRecords` | `{ inPackage: [{ reference, record, justification }], outside: [reference] }` — a reference the package does not hold stays a reference; nothing is dropped and nothing invented |
+| `timelineLinkFor(record, { name, keys, country, round })` | the route location of the timeline results for the record's country and dates, or null |
+
+### Conventions
+
+| Export | Meaning |
+| --- | --- |
+| `projectName(key, t)` / `useProjectName()` / `PROJECT_ENTRIES` | a project's name by its legacy key (`ISL`, `EPM`, `DBA`, `BAR`, `AWE`, `DCA`, `DGA`, `EXTHE`, `GALLERIES`), through `core.project.*`; an unknown key reads as itself |
+| `useSection()` | the `meta.section` of the current route — see Routing |
+| `useFeaturedRecord(entity, { withImage = true, seed })` | one record at random for a landing page's spotlight, among those with an image; null until the entity is loaded; `seed` pins the pick |
+
 ### The declaration outside a component
 
 | Export | Meaning |
@@ -311,6 +354,9 @@ The convention, applied by the router every website shares:
   location (`{ name, params }` or a path) or nothing, which is the not-found
   page. It may be async, so a website can load the entity it maps a legacy
   key through `backward_compatibility` with;
+- a route says what section it belongs to — `meta: { section: 'collection' }`
+  — and a shell reads it with `useSection()` for the banner title or the
+  active menu entry, instead of deriving it from the path;
 - a `/:pathMatch(.*)*` catch-all lands on `NotFoundView` (`core.notFound.page`),
   or on the component `config.notFound` names;
 - the router owns scrolling: back to where the visitor was when they come

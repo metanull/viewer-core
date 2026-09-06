@@ -1,0 +1,57 @@
+[
+  {
+    "id": "o1",
+    "internal_name": "Bowl",
+    "country_id": "c-eg",
+    "partner_id": "m1",
+    "dynasty_ids": ["d1"],
+    "tag_ids": ["t-type-bowl", "t-mat-ceramic"],
+    "start_date": 900,
+    "end_date": 950,
+    "images": [{ "url": "bowl.jpg" }],
+    "glossary_ids": ["g1"],
+    "related_items": [
+      { "id": "o2", "in_package": true, "justifications": { "en": "Same workshop", "fr": "Même atelier" } },
+      { "id": "x9", "in_package": false, "backward_compatibility": "mwnf3:objects:x9", "project_key": "ISL" }
+    ]
+  },
+  {
+    "id": "o2",
+    "internal_name": "Lamp",
+    "country_id": "c-sy",
+    "partner_id": "m2",
+    "dynasty_ids": ["d1", "d2"],
+    "tag_ids": ["t-type-lamp", "t-mat-glass"],
+    "start_date": 1200,
+    "end_date": null,
+    "images": [],
+    "glossary_ids": [],
+    "related_items": []
+  },
+  {
+    "id": "o3",
+    "internal_name": "Undated fragment",
+    "country_id": "c-eg",
+    "partner_id": "m1",
+    "dynasty_ids": [],
+    "tag_ids": ["t-mat-ceramic"],
+    "start_date": null,
+    "end_date": null,
+    "images": [{ "url": "fragment.jpg" }],
+    "glossary_ids": ["g1", "g2"],
+    "related_items": []
+  },
+  {
+    "id": "o4",
+    "internal_name": "Late tile",
+    "country_id": "c-tr",
+    "partner_id": "m2",
+    "dynasty_ids": ["d2"],
+    "tag_ids": ["t-type-tile", "t-mat-ceramic"],
+    "start_date": 1550,
+    "end_date": 1600,
+    "images": [{ "url": "tile.jpg" }],
+    "glossary_ids": [],
+    "related_items": []
+  }
+]

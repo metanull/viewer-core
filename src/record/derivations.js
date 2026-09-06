@@ -1,0 +1,154 @@
+import { computed, ref, toValue } from 'vue'
+import { useDataPackage } from '../composables/useDataPackage.js'
+import { byId, entityRef } from '../composables/useEntities.js'
+import { renderPlain } from '../i18n/markdown.js'
+import { roundOutward } from '../catalogue/dates.js'
+
+const BASE_LANGUAGE = 'en'
+
+// Four derivations every record page makes, written seven times.
+
+// ── The glossary popup ─────────────────────────────────────────────────────
+//
+// The renderer marks every glossary spelling as
+// `<span class="gloss-term" data-gid="…">` while it parses. Those spans are
+// inside `v-html`, so nothing binds to them one by one: one listener on the
+// container reads the click and answers with the term.
+
+/**
+ * `{ active, onClick, close }`: attach `onClick` to the element the sheet
+ * renders into; `active` is `{ id, word, spelling, definition }` for the
+ * term clicked, null otherwise. `entries` is the `glossary` list of
+ * `useRecordSheet` (a ref, getter or array).
+ */
+export function useGlossaryPopup(entries) {
+  const active = ref(null)
+  function onClick(event) {
+    const element = event?.target?.closest?.('.gloss-term')
+    if (!element) return
+    event.preventDefault()
+    const id = element.dataset.gid
+    const entry = (toValue(entries) ?? []).find((e) => e.id === id)
+    active.value = {
+      id,
+      spelling: element.textContent,
+      word: entry?.word ?? element.textContent,
+      definition: entry?.definition ?? '',
+    }
+  }
+  function close() {
+    active.value = null
+  }
+  return { active, onClick, close }
+}
+
+/**
+ * The glossary terms whose spelling starts with `input`, in `language`
+ * (falling back to English), for a glossary search box: `[{ id, word,
+ * spelling, definition }]`, one per term, sorted by spelling.
+ */
+export function searchGlossary(input, language, { entity = 'glossary' } = {}) {
+  const needle = String(input ?? '').trim().toLowerCase()
+  if (!needle) return []
+  const { translations } = useDataPackage()
+  const rows = translations(entity, language)
+  const fallback = translations(entity, BASE_LANGUAGE)
+  const out = []
+  for (const term of entityRef(entity).value ?? []) {
+    const t = rows[term.id] ?? fallback[term.id] ?? {}
+    const spellings = t.spellings?.length ? t.spellings : [term.word]
+    for (const spelling of spellings) {
+      if (String(spelling ?? '').toLowerCase().startsWith(needle)) {
+        out.push({ id: term.id, word: term.word, spelling: String(spelling).trim(), definition: t.definition ?? '' })
+        break
+      }
+    }
+  }
+  return out.sort((a, b) => a.spelling.localeCompare(b.spelling))
+}
+
+// ── Citation ───────────────────────────────────────────────────────────────
+
+/**
+ * The sentence both families print under a sheet:
+ * `Author "Name" in Project, Publisher, Year. Permalink` — assembled here in
+ * that order, from parts, rather than written into a text with holes in it.
+ * `inWord` is the site's `t('record.citation.in')`. Parts that are missing
+ * are left out with their punctuation.
+ */
+export function citation({ author, name, project, publisher = 'Museum With No Frontiers', year, permalink, inWord = 'in' } = {}) {
+  const title = renderPlain(name ?? '')
+  if (!title) return ''
+  const when = year ?? new Date().getFullYear()
+  const where = [project, publisher].filter(Boolean).join(', ')
+  const parts = []
+  if (author) parts.push(String(author).trim())
+  parts.push(`"${title}"`)
+  if (where) parts.push(`${inWord} ${where},`)
+  let sentence = `${parts.join(' ')} ${when}.`
+  if (permalink) sentence += ` ${permalink}`
+  return sentence
+}
+
+// ── Related records ────────────────────────────────────────────────────────
+
+/**
+ * A record's `related_items`, split by whether the package carries them:
+ * `inPackage` is `[{ reference, record, justification }]` with the
+ * justification in `language` (falling back to English); `outside` is the
+ * references the package does not hold, kept as the references they are — a
+ * link is never dropped for being unresolvable, and never invented either.
+ */
+export function relatedRecords(record, { entity = 'items', language = BASE_LANGUAGE, field = 'related_items' } = {}) {
+  const index = byId(entity).value
+  const inPackage = []
+  const outside = []
+  const seen = new Set()
+  for (const reference of record?.[field] ?? []) {
+    if (!reference || seen.has(reference.id)) continue
+    seen.add(reference.id)
+    const found = reference.in_package === false ? null : index.get(reference.id)
+    if (!found) {
+      outside.push(reference)
+      continue
+    }
+    const justifications = reference.justifications ?? {}
+    inPackage.push({
+      reference,
+      record: found,
+      justification: justifications[language] ?? justifications[BASE_LANGUAGE] ?? '',
+    })
+  }
+  return { inPackage, outside }
+}
+
+/** `relatedRecords` over reactive sources. */
+export function useRelatedRecords(record, options = {}) {
+  return computed(() => relatedRecords(toValue(record), { ...options, language: toValue(options.language) ?? BASE_LANGUAGE }))
+}
+
+// ── The timeline link ──────────────────────────────────────────────────────
+
+/**
+ * The route location of the timeline results for a record's country and
+ * dates, or null when the record has neither a country nor a date. `name`
+ * is the site's timeline-results route; `keys` the query keys it reads
+ * (`country`, `begin`, `end` by default); `country(record)` the value the
+ * route wants for the country (the id by default — a site whose timeline
+ * reads legacy codes passes its own); `round` rounds the dates outward to
+ * the century, as the DXA "Timeline for this item" does.
+ */
+export function timelineLinkFor(record, { name = 'timeline-results', keys = {}, country, round = false } = {}) {
+  if (!record) return null
+  const countryValue = country ? country(record) : record.country_id
+  const start = typeof record.start_date === 'number' ? record.start_date : null
+  const end = typeof record.end_date === 'number' ? record.end_date : null
+  if (!countryValue && start == null && end == null) return null
+  let [from, to] = [start, end]
+  if (round) [from, to] = roundOutward(start ?? undefined, end ?? undefined)
+  const query = {}
+  if (countryValue) query[keys.country ?? 'country'] = String(countryValue)
+  if (from != null) query[keys.begin ?? 'begin'] = String(from)
+  if (to != null) query[keys.end ?? 'end'] = String(to)
+  return { name, query }
+}
