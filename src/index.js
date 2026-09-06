@@ -6,7 +6,7 @@ export { createI18n, mergeMessages, useI18n, useLocale } from './i18n/index.js'
 export { isRtl, negotiateLanguage } from './i18n/language.js'
 export { renderBlock, renderInline, renderPlain } from './i18n/markdown.js'
 export { languageLabels, offeredLanguages } from './languages.js'
-export { defaultScrollBehavior } from './router/index.js'
+export { defaultScrollBehavior, resolveViews } from './router/index.js'
 export { mediaUrl, useSiteConfig } from './siteConfig.js'
 
 // The list pages: query state, pagination, facets, dates, keyword search.

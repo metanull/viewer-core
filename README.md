@@ -56,6 +56,7 @@ createViewer(config).mount('#app')
 | `siteName` | string | yes | shown on the Home view |
 | `languages` | string[] | no | the languages the website offers, from [`offeredLanguages()`](#which-languages-a-website-offers); defaults to the manifest's `languages` |
 | `features.entities` | string[] | no | entity names getting list + detail routes (`/<entity>`, `/<entity>/:id`) |
+| `views` | `{ home?, list?, detail? }` | no | the components that render the three slots — `/` and the routes `features.entities` publishes — in place of the generic views (see [Views](#views)) |
 | `extraViews` | RouteRecord[] | no | website-specific routes appended to the router (see [Routing](#routing)) |
 | `routes` | RouteRecord[] | no | raw vue-router records appended after `extraViews` |
 | `legacyRoutes` | `[{ path, resolve }]` | no | legacy URL shapes, redirect-only (see [Routing](#routing)) |
@@ -384,12 +385,42 @@ export default {
 
 ### Views
 
-| Export | Route | Props | Renders |
-| --- | --- | --- | --- |
-| `HomeView` | `/` | — | `siteName` + links to each configured entity list |
-| `ListView` | `/<entity>` | `entity`, `pageSize` (default 20) | paginated record list (`?page=N`), links to details |
-| `DetailView` | `/<entity>/:id` | `entity`, `id` | one record; string fields rendered as markdown |
-| `NotFoundView` | `/:pathMatch(.*)*` | — | `core.notFound.page` and a link home |
+Every website has three slots — the home page, a list page, a record page —
+and this package renders each with a generic view unless the website names
+another:
+
+| Slot | Route | Generic view | Props | Renders |
+| --- | --- | --- | --- | --- |
+| `home` | `/` | `HomeView` | — | `siteName` + links to each configured entity list |
+| `list` | `/<entity>` | `ListView` | `entity`, `pageSize` (default 20) | paginated record list (`?page=N`), links to details |
+| `detail` | `/<entity>/:id` | `DetailView` | `entity`, `id` | one record; string fields rendered as markdown |
+| — | `/:pathMatch(.*)*` | `NotFoundView` | — | `core.notFound.page` and a link home |
+
+The generic views exist to look at a new dataset: they expose the data
+package's shape, not the website's. A real website names its pages in
+`config.views`, and the same route names — `home`, `<entity>-list`,
+`<entity>-detail` — then render them. The composed views of
+`@metanull/viewer-layout/views` (`HomeView`, `CatalogueResultsView`,
+`RecordView`) are what a website names there: a landing page, a results
+page and a record page built from the components of that package on the
+composables of this one, driven by a spec the website declares. They live
+in the layout package because they are made of its components, and this
+package does not depend on it.
+
+```js
+import { CatalogueResultsView, HomeView, RecordView } from '@metanull/viewer-layout/views'
+
+export default {
+  features: { entities: ['items'] },
+  views: { home: HomeView, list: CatalogueResultsView, detail: RecordView },
+  home: { cards: [...], featured: { entity: 'items' } },
+}
+```
+
+A website that registers its own component on the `home` name in
+`extraViews`, or its own results and record routes, keeps it: `views` only
+fills the slots the website leaves to the package. `resolveViews(config)`
+answers the three components a configuration resolves to.
 
 ### Styles
 
