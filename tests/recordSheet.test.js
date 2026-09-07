@@ -1,7 +1,9 @@
 import { beforeAll, describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { nextTick, ref } from 'vue'
-import { byId, createI18n, loadEntities, sheetRows, useRecordSheet } from '../src/index.js'
+import {
+  byId, createI18n, glossaryTermsForText, loadEntities, sheetRows, useDataPackage, useRecordSheet,
+} from '../src/index.js'
 import { messages } from './fixtures/messages.js'
 
 async function settle(ready) {
@@ -72,6 +74,35 @@ describe('useRecordSheet', () => {
 
   it('needs to know the entity', () => {
     expect(() => mountSheet(ref(null), {})).toThrow(/entity/)
+  })
+})
+
+// A dynasty history or a theme essay has no `glossary_ids` column to read —
+// this is the scan that stands in for it, over the whole glossary.
+describe('glossaryTermsForText', () => {
+  beforeAll(async () => {
+    const { loadTranslations } = useDataPackage()
+    await loadTranslations('glossary', 'en')
+    await loadTranslations('glossary', 'fr')
+  })
+
+  it('scans the whole glossary against the text, in the language asked', () => {
+    const terms = glossaryTermsForText('A pot with a fine glaze, in kufic script.', 'en')
+    expect(terms.map((t) => t.id).sort()).toEqual(['g1', 'g2'])
+    expect(terms.find((t) => t.id === 'g1').spellings).toEqual(['kufic', 'kufic script'])
+  })
+
+  it('falls back to a term’s English spellings when it has no row in the language asked', () => {
+    // g2 has no French row; its English spelling "glaze" still matches.
+    const terms = glossaryTermsForText('Un bol en glaze, coufique.', 'fr')
+    expect(terms.map((t) => t.id).sort()).toEqual(['g1', 'g2'])
+    expect(terms.find((t) => t.id === 'g1').spellings).toEqual(['coufique', 'écriture coufique'])
+  })
+
+  it('finds nothing for a text that names no term, or for no text at all', () => {
+    expect(glossaryTermsForText('Nothing relevant here.', 'en')).toEqual([])
+    expect(glossaryTermsForText('', 'en')).toEqual([])
+    expect(glossaryTermsForText(null, 'en')).toEqual([])
   })
 })
 

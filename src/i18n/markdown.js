@@ -60,7 +60,7 @@ const NOT_WORD = '[\\p{L}\\p{N}_]'
  * distinct glossary (see the cache below); built once, matched against
  * every text rendered with that glossary.
  */
-function glossaryExtension(glossary) {
+function spellingIndex(glossary) {
   const bySpelling = new Map()
   for (const { id, spelling } of glossary) {
     const trimmed = spelling?.trim()
@@ -72,8 +72,13 @@ function glossaryExtension(glossary) {
   // contains both.
   const spellings = [...bySpelling.keys()].sort((a, b) => b.length - a.length)
   if (spellings.length === 0) return null
+  return { bySpelling, alternation: spellings.map(escapeRegExp).join('|') }
+}
 
-  const alternation = spellings.map(escapeRegExp).join('|')
+function glossaryExtension(glossary) {
+  const index = spellingIndex(glossary)
+  if (!index) return null
+  const { bySpelling, alternation } = index
   const findAnywhere = new RegExp(`(?<!${NOT_WORD})(?:${alternation})(?!${NOT_WORD})`, 'iu')
   const matchAtStart = new RegExp(`^(?:${alternation})(?!${NOT_WORD})`, 'iu')
 
@@ -129,6 +134,44 @@ function withGlossary(breaks, glossary) {
 
 function engineFor(breaks, glossary) {
   return glossary && glossary.length > 0 ? withGlossary(breaks, glossary) : pipeline(breaks)
+}
+
+// The same key as the render pipelines, for the same reason: a glossary list
+// is rebuilt into a regex once, however many texts get scanned against it.
+const glossaryMatchers = new Map()
+
+function matcherFor(glossary) {
+  const key = glossaryKey(glossary)
+  let matcher = glossaryMatchers.get(key)
+  if (matcher === undefined) {
+    const index = spellingIndex(glossary)
+    matcher = index
+      ? { bySpelling: index.bySpelling, regex: new RegExp(`(?<!${NOT_WORD})(?:${index.alternation})(?!${NOT_WORD})`, 'giu') }
+      : null
+    glossaryMatchers.set(key, matcher)
+  }
+  return matcher
+}
+
+/**
+ * The ids of `glossary` (`[{ id, spelling }]`) whose spelling occurs in
+ * `text`, matched the same word-bounded, case-insensitive way
+ * `renderBlock`/`renderInline` highlight them — a text scanned this way and
+ * the same text rendered with the same list agree on what counts as a hit.
+ * The free-text counterpart to a record's own `glossary_ids`: a dynasty
+ * history or a theme essay has no such column to read, so this scans the
+ * whole glossary against the text instead. One id per term, in no
+ * particular order.
+ */
+export function glossaryIdsIn(text, glossary) {
+  if (!glossary || glossary.length === 0) return []
+  const matcher = matcherFor(glossary)
+  if (!matcher) return []
+  const found = new Set()
+  for (const match of String(text ?? '').matchAll(matcher.regex)) {
+    found.add(matcher.bySpelling.get(match[0].toLowerCase()))
+  }
+  return [...found]
 }
 
 /** A text as one or more paragraphs. `glossary`: `[{ id, spelling }]` to highlight. */
@@ -193,4 +236,30 @@ export function renderPlain(text) {
   return decodeEntities(plainText(record.lexer(String(text ?? ''))))
     .replace(/\s+/g, ' ')
     .trim()
+}
+
+// `md`/`mdInline`/`mdStrip` are `renderBlock`/`renderInline`/`renderPlain`
+// under the one signature and the one convention every site wrote for
+// itself: a missing text is `''`, not an empty paragraph or "undefined", and
+// a record's own line breaks are kept unless a caller says otherwise — a
+// data-package field is typed with breaks on purpose, the way a dictionary
+// entry is not. `renderBlock`/`renderInline`/`renderPlain` stay, for a
+// caller that wants the pipeline's own default (`breaks: false`) instead.
+
+/** `renderBlock`, record convention: `''` for a missing text, line breaks kept by default. */
+export function md(text, { glossary, breaks = true } = {}) {
+  if (!text) return ''
+  return renderBlock(text, { breaks, glossary })
+}
+
+/** `renderInline`, the same convention, for a heading or a table cell. */
+export function mdInline(text, { glossary } = {}) {
+  if (!text) return ''
+  return renderInline(text, { glossary })
+}
+
+/** `renderPlain`, the same convention, for an `alt`, a `title`, a sort key. */
+export function mdStrip(text) {
+  if (!text) return ''
+  return renderPlain(text)
 }

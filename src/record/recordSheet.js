@@ -2,7 +2,7 @@ import { computed, ref, toValue, watch } from 'vue'
 import { useDataPackage } from '../composables/useDataPackage.js'
 import { entityRef } from '../composables/useEntities.js'
 import { useRecordLanguage } from '../composables/useRecordLanguage.js'
-import { renderBlock, renderInline, renderPlain } from '../i18n/markdown.js'
+import { glossaryIdsIn, renderBlock, renderInline, renderPlain } from '../i18n/markdown.js'
 
 const BASE_LANGUAGE = 'en'
 
@@ -13,6 +13,21 @@ const BASE_LANGUAGE = 'en'
 // reaches in that language for the renderer, and say when it is ready.
 // Seven pages wrote that choreography by hand. This is the one place it is
 // written, on top of `useRecordLanguage`, which decides the language.
+
+// A term's row in one language: its spellings and definition from
+// `rows`/`fallback` (English), its headword from `term` (the glossary
+// record itself, language-independent) — `null` when the term has neither,
+// which happens for a headword-only fixture row with no translation file at
+// all. Shared by `glossaryTermsFor` (walks a record's own `glossary_ids`)
+// and `glossaryTermsForText` (walks the whole glossary, filtered by what
+// the text contains), so the two agree on what a term row looks like.
+function termRow(id, term, rows, fallback) {
+  const t = rows[id] ?? fallback[id] ?? {}
+  const spellings = (t.spellings ?? []).map((s) => String(s).trim()).filter(Boolean)
+  const word = term?.word ?? spellings[0] ?? ''
+  if (!word && spellings.length === 0) return null
+  return { id, word, definition: t.definition ?? '', spellings: spellings.length ? spellings : [word] }
+}
 
 /**
  * `{ id, word, definition, spellings }` for each glossary term of `record`
@@ -26,14 +41,38 @@ export function glossaryTermsFor(record, language, { entity = 'glossary', transl
   const fallback = translations(entity, BASE_LANGUAGE)
   const out = []
   for (const id of ids) {
-    const term = byId?.get(id)
-    const t = rows[id] ?? fallback[id] ?? {}
-    const spellings = (t.spellings ?? []).map((s) => String(s).trim()).filter(Boolean)
-    const word = term?.word ?? spellings[0] ?? ''
-    if (!word && spellings.length === 0) continue
-    out.push({ id, word, definition: t.definition ?? '', spellings: spellings.length ? spellings : [word] })
+    const row = termRow(id, byId?.get(id), rows, fallback)
+    if (row) out.push(row)
   }
   return out
+}
+
+/**
+ * `glossaryTermsFor`'s counterpart for a text with no `glossary_ids` column
+ * to read — a dynasty history, a theme essay: every glossary term whose
+ * spelling occurs in `text`, matched the same word-bounded way `md`/
+ * `renderBlock` highlight it, so what this returns and what the text is
+ * rendered with agree. The candidate list — the whole glossary in
+ * `language`, English behind it — is the same for every text asked about
+ * in that language; `glossaryIdsIn` is what carries the caching (see
+ * `markdown.js`), so building it here costs one pass over the glossary,
+ * not a rebuilt regex.
+ */
+export function glossaryTermsForText(text, language, { entity = 'glossary' } = {}) {
+  const value = String(text ?? '')
+  if (!value) return []
+  const { translations } = useDataPackage()
+  const rows = translations(entity, language)
+  const fallback = translations(entity, BASE_LANGUAGE)
+  const byId = new Map()
+  const candidates = []
+  for (const term of entityRef(entity).value ?? []) {
+    const row = termRow(term.id, term, rows, fallback)
+    if (!row) continue
+    byId.set(term.id, row)
+    for (const spelling of row.spellings) candidates.push({ id: term.id, spelling })
+  }
+  return glossaryIdsIn(value, candidates).map((id) => byId.get(id))
 }
 
 /** The `[{ id, spelling }]` list the renderers highlight, one entry per spelling. */

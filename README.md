@@ -138,6 +138,7 @@ createViewer({ ...config, messages: mergeMessages(catalogues, local) }).mount('#
 | `mergeMessages(...catalogues)` | the merge rule above |
 | `negotiateLanguage`, `isRtl` | the language rules, for a website that needs them directly |
 | `renderBlock(text, { breaks, glossary })`, `renderInline(text, { breaks, glossary })`, `renderPlain(text)` | the Markdown pipeline `I18nText`/`I18nTextInline` render through, for a website that needs it directly (a data-package field, not a text) |
+| `md(text, { glossary, breaks = true })`, `mdInline(text, { glossary })`, `mdStrip(text)` | the same three, under the record-field convention: `''` for a missing text, line breaks kept by default (a text in the dictionary is prose; a record's field is typed with breaks on purpose) |
 
 The three renderers are the only ones. `renderBlock` gives paragraphs,
 `renderInline` a heading or a cell, `renderPlain` plain text for an `alt`,
@@ -145,7 +146,12 @@ a `title`, an option label or a sort key: an image becomes its alt text, a
 break a space, raw HTML nothing. All three read the same parser and apply
 the same escaping, so a website never imports `marked` and never writes a
 rendering rule of its own — a field that renders wrongly is fixed in the
-importer, where the data is made, not in the site.
+importer, where the data is made, not in the site. `md`/`mdInline`/`mdStrip`
+are the same pipeline behind the one signature every site otherwise wrote
+for itself (`md(text, glossary)` on some, `md(text, { glossary })` on
+others) — a website reaches for these over `renderBlock`/`renderInline`/
+`renderPlain` unless it specifically wants the pipeline's own `breaks: false`
+default.
 
 `renderBlock`/`renderInline`'s optional `glossary` — `[{ id, spelling }]`, one
 entry per spelling of each of a record's glossary words in the active
@@ -315,6 +321,7 @@ viewer-layout's.
 | `sheetRows(spec, ctx)` | `[{ key, label, render, value, html }]` from `[{ key, label, value, render, when, join }]`: `value` a function of `ctx` or the name of a field of `ctx.text`; `render` one of `inline`, `block`, `plain` (through the pipeline, with `ctx.glossary`), `link`, `custom` (handed back for a slot); `when(ctx)` gates the row; empty values are dropped. "Materials/techniques" on one site and "Type" on another for the same field are both legacy facts, and both are a spec entry. |
 | `useGlossaryPopup(entries)` | `{ active, onClick, close }` — one delegated click on the sheet's container answers the term rendered as `.gloss-term` |
 | `searchGlossary(input, language)` | the terms whose spelling starts with the input, for a glossary search box |
+| `glossaryTermsForText(text, language, { entity })` | `glossaryTermsFor`'s counterpart for a text with no `glossary_ids` column — a dynasty history, a theme essay: `[{ id, word, definition, spellings }]` for every glossary term whose spelling occurs in `text`, matched the same word-bounded way `md`/`renderBlock` highlight it. Pass the result through `glossaryEntries` for the `glossary` option the renderers take, the same as `terms`/`glossary` from `useRecordSheet` |
 | `citation({ author, name, project, publisher, year, permalink, inWord })` | the sentence under a sheet, assembled from parts in order rather than written into a text with holes |
 | `relatedRecords(record, { entity, language })` / `useRelatedRecords` | `{ inPackage: [{ reference, record, justification }], outside: [reference] }` — a reference the package does not hold stays a reference; nothing is dropped and nothing invented |
 | `timelineLinkFor(record, { name, keys, country, round })` | the route location of the timeline results for the record's country and dates, or null |
