@@ -1,0 +1,9 @@
+{
+  "ev1": { "description": "A dynasty rises in Egypt." },
+  "ev2": { "description": "A period begins with no known end.", "date_from_description": "Early 13th century" },
+  "ev3": { "description": "A city changes hands in Syria.", "date_from_description": "c. 1000", "date_to_description": "c. 1050" },
+  "ev4": { "description": "The exhibition's own account of the period." },
+  "ev5": { "description": "A later chapter.", "name": "The later chapter" },
+  "ev6": { "description": "An earlier chapter.", "name": "The earlier chapter" },
+  "ev7": { "description": "An undated record with no fixed year." }
+}

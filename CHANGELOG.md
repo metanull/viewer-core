@@ -20,6 +20,19 @@ Wave G of the shared-pages epic (metanull/inventory-app#1695).
   interface, so a fourth shape gets it without a second implementation.
   `buildCollectionTree`/`collectionTreeFromThemes` are pure; `useCollectionTree`
   is the reactive form over `entityRef`.
+- `useTimelineEvents` (#55): the engine of a Timeline results page, one
+  implementation for the three axes legacy split across separate
+  endpoints — the worldwide country merge, an exhibition's own narrative
+  chronology in its place, and Sharing History's further split by which
+  exhibition an event belongs to. The event overlap rule was triplicated
+  verbatim across Islamic Art, Baroque Art and Sharing History, mirroring
+  legacy `class.hcr.inc.php`, and existed again as `findEvents` in
+  carpets' `useTimeline.js`, the best-factored copy; carpets and
+  water-in-islam separately wrote the DXA sites' local-chronology handling.
+  `overlapsRange`, `effectiveYearTo` and `eventDateLabel` are exported on
+  their own, pure. The DXA legacy 2-letter country code table stays out of
+  this package — a site that keys its Timeline URLs on it passes its own
+  `countryIdForCode`.
 
 ## 1.9.1
 

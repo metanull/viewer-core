@@ -288,6 +288,21 @@ is the site's.
 | `eraLabel(year, t)`, `roundOutward(start, end)` | "1193 AD" / "502 BC"; a record's dates rounded outward to the century |
 | `useKeywordIndex(entity, { grammar, fields, haystack, language })` | `{ search, reset }` — the two search engines under one interface. `grammar: 'fields'`: `fields` maps a field name to `(record, text) => string \| string[]`, `search([{ field, keyword, cond }])` folds the rows with AND/OR (the `database.php` form). `grammar: 'boolean'`: `haystack(record, text)` returns the strings searched, `search('+word -word word* "a phrase"')` ranks by the legacy full-text grammar. `language` is the translation the text is read in. Every value is read as plain text through the pipeline; haystacks are cached per record and language and dropped when that language's translations change. |
 
+### Timelines
+
+Legacy's country chronology (`hcr`) is one merged, year-ordered list per
+country, and an exhibition can carry its own narrative chronology instead
+(`source: 'thg_local'` on its `timelines.json` row) or split the merge by
+which exhibition each event belongs to (Sharing History). Seven websites'
+Timeline pages are all one of these three axes over the same event shape.
+
+| Export | Meaning |
+| --- | --- |
+| `useTimelineEvents({ scope, countryLabel, countryIdForCode, tr, timelinesEntity, eventsEntity })` | `{ countries, yearRange, yearBuckets(t), hasTimeline, usesLocalTimeline, findEvents({ country, collection, begin, end }) }`. `scope` is `'country'` (the worldwide merge), `'local'` (an exhibition's own `thg_local` chronology in place of the merge — `countries` is empty, there is nothing to filter by) or `'collection'` (the merge again, plus a `collection` filter on the exhibition a timeline is bound to, `null` meaning the Permanent Collection). `countries` is one entry per country with a chronology, `{ value, label }`, alphabetized, with an `{ value: 'all', label: null }` marker first (never, for `'local'`) — the marker carries no label of its own so a picker names it through its own catalogue entry. `countryLabel(id)` labels a country; the DXA legacy 2-letter code table stays out of this package, so a site passing one instead resolves it through `countryIdForCode(code)`. `tr(id)` returns an event's translated fields, already resolved for entity and language, the same way a site's own data composable already binds it. `findEvents` returns the scope's events in `[begin, end]`, chronological, `display_order` breaking a tie on `year_from`, an event with no year at all last. |
+| `overlapsRange(event, begin, end)` | legacy `class.hcr.inc.php`'s overlap rule, standalone: a dated event overlaps once its known end is past `begin` and its start is before `end`; an open-ended event (no known end) overlaps on its start alone; an undated event matches nothing but an unbounded search. |
+| `effectiveYearTo(event)` | `event.year_to`, or `null` when it is `0` or absent — legacy's convention for an open-ended period. |
+| `eventDateLabel(event, text, t)` | the label under an event, trying in order: a narrative chronology's own period name (`text.name` — a sort key there, not a label), a curated description pair (`text.date_from_description` / `text.date_to_description`), and the derived year range through `eraLabel`, for the worldwide merge which has neither. |
+
 ### Record pages
 
 The engine of a record page, on top of `useRecordLanguage`. The field list
