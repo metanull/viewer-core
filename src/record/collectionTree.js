@@ -299,7 +299,9 @@ export function useCollectionTree(options = {}) {
     walk: () => tree.value.walk(),
     previous: (id) => tree.value.previous(id),
     next: (id) => tree.value.next(id),
-    entity: computed(() => tree.value.entity),
-    source: computed(() => tree.value.source),
+    // entity and source are fixed by the options at call time and never change;
+    // a consumer reads them as plain strings, not refs (entityRef and pkg.tr lookups).
+    entity,
+    source,
   }
 }

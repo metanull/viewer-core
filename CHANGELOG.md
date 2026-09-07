@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.12.1
+
+### Fixed
+
+- `useCollectionTree` (#80): `entity` and `source` in the composable's return are now plain
+  strings (not computed refs). Both values are fixed by the options at call time and never
+  change; consumers read them as strings for entity lookups, so a ref object breaks every
+  translation read.
+
 ## 1.12.0
 
 ### Fixed
