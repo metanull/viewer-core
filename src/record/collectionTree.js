@@ -60,14 +60,52 @@ function buildIndex(nodes, rootId, { childType, order = 'display_order', itemIds
     list.sort((a, b) => orderOf(byIdMap.get(a), order) - orderOf(byIdMap.get(b), order))
   }
 
-  // `childType` is applied at every depth, not just the root's: a marker's
-  // direct children are sometimes a mix of the real tree and siblings that
-  // only look like it (sharinghistory's country-specific "National Context"
-  // collections sit next to the real themes), and a caller who names the
-  // type wants it held to at every level it asks about, not only the first.
+  // A node's depth below the root: the root itself is 0, its direct
+  // children 1, and so on — bounded by `rootId`, not by how far the
+  // `parent_id` chain actually goes (an explicit `rootId` partway down the
+  // data is depth 0 for this tree, even though it has ancestors of its own).
+  // `parents()` below walks the same chain but doesn't stop at `rootId`,
+  // because a breadcrumb wants the true ancestry; this does, because a
+  // depth-indexed `childType` cares only about position within this tree.
+  function depthOf(id) {
+    let depth = 0
+    let current = byIdMap.get(id)
+    const seen = new Set()
+    while (current && current.id !== rootId && current.parent_id != null && !seen.has(current.id)) {
+      seen.add(current.id)
+      depth++
+      if (current.parent_id === rootId) break
+      current = byIdMap.get(current.parent_id)
+    }
+    return depth
+  }
+
+  // `childType` filters a node's children, in one of three forms:
+  //  - a string: applied at every depth, not just the root's — a marker's
+  //    direct children are sometimes a mix of the real tree and siblings
+  //    that only look like it (sharinghistory's country-specific "National
+  //    Context" collections sit next to the real themes), and a caller who
+  //    names the type wants it held to at every level, not only the first.
+  //  - an array, indexed by depth below the root (`['theme', 'subtheme']`:
+  //    depth 1 keeps `theme`, depth 2 keeps `subtheme`), for a tree whose
+  //    levels are different types themselves — sharinghistory's exhibitions
+  //    → themes → chapters, where a single type at every depth drops the
+  //    chapters. A depth past the end of the array is unfiltered.
+  //  - a function `(node, depth, parent) => boolean`, for a rule neither of
+  //    the above expresses.
   function children(id) {
     const kids = (childIds.get(id) ?? []).map((cid) => byIdMap.get(cid)).filter(Boolean)
-    return childType ? kids.filter((node) => node.type === childType) : kids
+    if (!childType) return kids
+    if (typeof childType === 'function') {
+      const parent = byIdMap.get(id) ?? null
+      const depth = depthOf(id) + 1
+      return kids.filter((node) => childType(node, depth, parent))
+    }
+    if (Array.isArray(childType)) {
+      const type = childType[depthOf(id)]
+      return type ? kids.filter((node) => node.type === type) : kids
+    }
+    return kids.filter((node) => node.type === childType)
   }
 
   function parents(id) {
@@ -169,11 +207,15 @@ function buildIndex(nodes, rootId, { childType, order = 'display_order', itemIds
  * anchor the importer keys the tree from, e.g. `"exhibitions-root"`);
  * `rootId` takes an id directly, for the sites that resolve a marker's
  * single child as the real root themselves (islamicart's Artistic
- * Introduction). Exactly one of the two is expected. `childType` filters
- * every level's children to one `type` (sharinghistory's themes, sitting
- * next to National Context collections that are not themes). Pure — no
- * reactivity, so it is also what a Node script or a one-off script can call
- * directly.
+ * Introduction). Exactly one of the two is expected. `childType` filters a
+ * node's children by `type`: a string applies the same type at every depth
+ * (sharinghistory's themes, sitting next to National Context collections
+ * that are not themes); an array is indexed by depth below the root, one
+ * type per level (sharinghistory's themes *and* chapters — `['theme',
+ * 'subtheme']` — since a single type at every depth would drop the
+ * chapters); a function `(node, depth, parent) => boolean` covers anything
+ * else. Pure — no reactivity, so it is also what a Node script or a one-off
+ * script can call directly.
  */
 export function buildCollectionTree(collections, { purpose, rootId, childType, order = 'display_order' } = {}) {
   const nodes = collections ?? []
@@ -213,7 +255,8 @@ export function collectionTreeFromThemes(themes, { childType, order = 'display_o
 
 /**
  * The reactive form: `useCollectionTree({ purpose | rootId, childType?,
- * entity = 'collections', order = 'display_order' })` for the
+ * entity = 'collections', order = 'display_order' })` (see
+ * `buildCollectionTree` for the forms `childType` accepts) for the
  * `collections.json` shape, or `useCollectionTree({ source: 'themes',
  * entity: 'themes' })` for a `themes.json` package, where `purpose`/`rootId`
  * do not apply (see `collectionTreeFromThemes`). Reads `entity` through
