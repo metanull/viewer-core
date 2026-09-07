@@ -1,7 +1,10 @@
 import { beforeAll, describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import { PROJECT_ENTRIES, createI18n, loadEntities, projectName, useFeaturedRecord, useProjectName, useSection } from '../src/index.js'
+import {
+  PROJECT_ENTRIES, PROJECT_FAMILIES, createI18n, loadEntities, mwnfLinks, projectFamily, projectName,
+  sectionMeta, useFeaturedRecord, useProjectName, useSection,
+} from '../src/index.js'
 
 describe('projectName', () => {
   const t = (key) => (key === 'core.project.islamicArt' ? 'Discover Islamic Art' : key)
@@ -22,6 +25,46 @@ describe('projectName', () => {
     let name
     mount({ setup() { name = useProjectName(); return () => null } }, { global: { plugins: [i18n] } })
     expect(name('DCA')).toBe('Discover Carpet Art')
+  })
+})
+
+describe('projectFamily', () => {
+  it('answers a project\'s colour family by its legacy key, and the key itself when unknown', () => {
+    expect(projectFamily('ISL')).toBe('ISLandEPM')
+    expect(projectFamily('EPM')).toBe('ISLandEPM')
+    expect(projectFamily('DBA')).toBe('DBA')
+    expect(projectFamily('ZZZ')).toBe('ZZZ')
+    expect(projectFamily(undefined)).toBe('')
+  })
+
+  it('has one entry per key of PROJECT_ENTRIES, both spellings of Sharing History included', () => {
+    expect(Object.keys(PROJECT_FAMILIES).sort()).toEqual(Object.keys(PROJECT_ENTRIES).sort())
+    expect(PROJECT_FAMILIES.AWE).toBe(PROJECT_FAMILIES.awe)
+  })
+})
+
+describe('sectionMeta', () => {
+  it('merges the chrome entities into every section, on top of the section\'s own', () => {
+    const meta = sectionMeta(['gallery', 'items', 'partners', 'countries'])
+    expect(meta('collection', 'tags')).toEqual({
+      section: 'collection',
+      entities: ['gallery', 'items', 'partners', 'countries', 'tags'],
+    })
+    expect(meta('home')).toEqual({ section: 'home', entities: ['gallery', 'items', 'partners', 'countries'] })
+  })
+
+  it('carries no chrome at all when none is named', () => {
+    const meta = sectionMeta()
+    expect(meta('database', 'languages')).toEqual({ section: 'database', entities: ['languages'] })
+  })
+})
+
+describe('mwnfLinks', () => {
+  it('is frozen, and carries the twelve addresses the DXA configs repeat', () => {
+    expect(Object.isFrozen(mwnfLinks)).toBe(true)
+    expect(mwnfLinks.portal).toBe('https://www.museumwnf.org')
+    expect(mwnfLinks.islamicArt).toBe('https://islamicart.museumwnf.org')
+    expect(Object.keys(mwnfLinks)).toHaveLength(12)
   })
 })
 
