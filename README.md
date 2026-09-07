@@ -426,6 +426,47 @@ path; for a dataset with a large or many-language translation set this can
 turn a several-second build into a build that hangs for hours in CI — this is
 what made islamicart's production build unable to finish.
 
+### A website's data composable
+
+`useCatalogueData` is the wrapper half of what every site's own data
+composable had written for itself: the same three-line `tr`, the same
+memoised `loadEnglish`, the same one-shape label helper, the same
+`md`/`mdInline`/`mdStrip` re-export, around whichever entities and
+visibility rules were the site's own. Call it once, at the top of the
+module, and re-export what it returns beside what is genuinely the site's —
+routes, legacy key mappings, chrome images, sibling lists.
+
+```js
+import { useCatalogueData } from '@metanull/viewer-core'
+
+const catalogue = useCatalogueData({
+  eager: ['items', 'partners', 'countries', 'glossary', 'dynasties'],
+  visible: {
+    // A per-build language filter, a hidden-partner rule, a display-status
+    // check are all "which records this build shows" — declared here once,
+    // instead of coded into every page that lists that entity.
+    items: (i) => !i.languages?.length || i.languages.includes('en'),
+    partners: (p) => !hiddenPartnerIds.has(p.id),
+  },
+})
+
+export const items = catalogue.entity('items')
+export const itemById = catalogue.index('items')
+export const { tr, md, mdInline, mdStrip, labelOf, loadEnglish } = catalogue
+```
+
+| Export | Meaning |
+| --- | --- |
+| `useCatalogueData({ eager, defaultLanguage = 'en', visible = {}, glossary = true })` | `eager` names the entities `loadEnglish` loads — every entity the package carries, by default. `defaultLanguage` is what `tr`, `labelOf` and the glossary binding read. `visible[name]` is a predicate `(record) => boolean`, applied by `entity(name)`/`index(name)` when one is declared. `glossary` turns off the default binding on `md`/`mdInline`; either still takes a caller's own `glossary` regardless. |
+| `tr(entity, id, lang = defaultLanguage)` | one record's translated fields, falling back to `defaultLanguage` then `{}` |
+| `md(text, opts)` / `mdInline(text, opts)` | `md`/`mdInline` from the package, with the site's own glossary (every term in `defaultLanguage`) bound as the default `glossary` — a caller passing its own (a record's own terms, not every term in the package) is still honoured |
+| `mdStrip(text)` | the package's own, unchanged — plain text carries no highlighting to bind |
+| `loadEnglish()` | loads `defaultLanguage` for every entity in `eager`, once, memoised |
+| `labelOf(entity, id, { fallback = 'internal_name' })` | `mdStrip(tr(entity, id).name ?? record[fallback] ?? id)` — the one label shape every site wrote, for a list, a dropdown, an alt text |
+| `entity(name)` | `entityRef(name)`'s records, narrowed by `visible[name]` when one is declared; `null` until that entity's chunk has arrived, the same as `entityRef` |
+| `index(name, key = 'id')` | a `Map` of `entity(name)`'s records by `key` — the visible ones, unlike `byId` |
+| `availableLanguages`, `loadTranslations`, `translations` | the package's own, re-exported so a site reads everything through the one object |
+
 ### Routing
 
 The convention, applied by the router every website shares:
