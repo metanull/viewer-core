@@ -575,6 +575,40 @@ structural rules only. It consumes CSS custom properties and never defines brand
 | `<entity>.json` | array of records; each record has an `id`, optional `title`/`name`, other fields free-form (strings may contain markdown) |
 | `translations/<entity>.<lang>.json` | optional; object keyed by record `id`, each value the record's translated fields for `<lang>`. A file is simply absent when that entity has no translation in that language. |
 
+## Testing a website
+
+The package exports shared smoke-test helpers at @metanull/viewer-core/testing: mount a website, check its configuration, and verify that texts are rendered.
+
+| Export | Use |
+| --- | --- |
+| mountSite(config, messages, hash) | Mount a website on a detached DOM node at a given hash (default '#/'); returns { app, host, router }. The router is ready and the app is mounted before the promise resolves. |
+| checkRoutes(config, { names, legacyPaths }) | Verify every route has a name, no route is a catch-all, and expected names and legacy paths are present. Returns the list of problems found. |
+| checkSectionMeta(config) | Verify every route has a meta.section string (used by the menu to highlight the current page). Returns the list of problems found. |
+| checkTextsRendered(host, { namespaces }) | Match text keys in the rendered host against a regex like /\b(ns1\|ns2)\.[a-z]/i. Returns the list of namespaces found (empty if none). |
+| defineViewerConfig({ dataPackage, inline, plugins }) | Return a Vite config object the seven websites share: the @inventory-data alias, optimizeDeps to inline viewer packages, 	estTimeout of 60s, and the test environment. dataPackage is the npm package name; inline is an optional array of extra packages; plugins is the Vite plugins array (e.g. @vitejs/plugin-vue). |
+| checkOfferedLanguages(config) | Check that the website offers only languages with content, in the declared order, with labels on the switcher. Returns the list of problems found. |
+
+@metanull/viewer-core/testing is not imported by websites, only by their tests. A website test might be:
+
+\\\js
+import { checkOfferedLanguages, checkRoutes, checkSectionMeta, mountSite } from '@metanull/viewer-core/testing'
+import config from '../src/dataset.config.js'
+import { mergeMessages } from '@metanull/viewer-core'
+import { catalogues } from '@metanull/viewer-i18n/gallery'
+import ownTexts from '../locales/en.json'
+
+const messages = mergeMessages(catalogues, { en: ownTexts })
+
+describe('smoke test', () => {
+  it('mounts and declares every route by name', async () => {
+    const { app } = await mountSite(config, messages)
+    expect(checkRoutes(config)).toEqual([])
+    expect(checkSectionMeta(config)).toEqual([])
+    expect(checkOfferedLanguages(config)).toEqual([])
+    app.unmount()
+  })
+})
+\\\
 ## Release procedure
 
 1. Merge to `main` via PR (CI: tests + a downstream build of every website).
