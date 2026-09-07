@@ -13,14 +13,20 @@
 
 /**
  * Whether `record` counts as a main (rather than associated) partner.
- * `tier` names the field the converged partner shape carries (`level`); its
- * value `'partner'` marks a main partner, and anything else — including a
- * record the field is simply absent from — is associated. Without a `tier`
- * at all there is nothing to divide records on, so every record is main,
- * which is what a caller with no tiers (the DXA lists) wants.
+ * `tier` names the field the converged partner shape carries (`level`).
+ * A record is associated only when its tier value is a non-empty value
+ * other than `'partner'` (legacy values: `'associated_partner'`,
+ * `'minor_contributor'`); `null`, `undefined`, `''`, or `'partner'` mean
+ * main. This is necessary because exporters emit `level: null` for every
+ * partner without curated hierarchy. Without a `tier` at all there is nothing
+ * to divide records on, so every record is main, which is what a caller with
+ * no tiers (the DXA lists) wants.
  */
 function isMainTier(record, tier) {
-  return !tier || record?.[tier] === 'partner'
+  if (!tier) return true
+  const tierValue = record?.[tier]
+  // Treat null, undefined, empty string, or 'partner' as main
+  return tierValue == null || tierValue === '' || tierValue === 'partner'
 }
 
 /**

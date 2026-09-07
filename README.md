@@ -370,7 +370,7 @@ under the main partner it belongs to.
 
 | Export | Meaning |
 | --- | --- |
-| `groupByCountry(records, { label, tier?, order = 'asc' })` | `[{ country, label, main, associated }]`, one entry per distinct `country_id`, sorted by `label`. `label(country)` names a group's country, the same shape as a facet's `label(value)`. `tier` names the field that marks a main partner (the converged shape's `level`); its value `'partner'` marks main, anything else — including a record the field is absent from — is associated. Without a `tier` every record is main, which is the DXA lists' plain grouping. Partners keep the order `records` was given in within each tier. |
+| `groupByCountry(records, { label, tier?, order = 'asc' })` | `[{ country, label, main, associated }]`, one entry per distinct `country_id`, sorted by `label`. `label(country)` names a group's country, the same shape as a facet's `label(value)`. `tier` names the field that marks a main partner (the converged shape's `level`); a record is associated only when its tier value is a non-empty value other than `'partner'` (legacy values: `'associated_partner'`, `'minor_contributor'`); `null`, `undefined`, `''`, or `'partner'` mean main. Without a `tier` every record is main, which is the DXA lists' plain grouping. Partners keep the order `records` was given in within each tier. |
 | `partnerHierarchy(partners)` | `{ children(id), parentOf(id), roots }` from `parent_id`: `children(id)` a partner's associated partners, `parentOf(id)` the main partner it belongs to (or null), `roots` every partner with no parent in the list or whose `parent_id` points outside it. |
 
 ### Conventions

@@ -62,7 +62,9 @@ Wave G of the shared-pages epic (metanull/inventory-app#1695).
   partner lists wrote seven ways — main/associated tiers on a named field,
   an A–Z/Z–A order — as one derivation, and the `parent_id` relationship
   legacy nested associated partners under their parent by, carried on a
-  third of the standalone partners and read by no site until now.
+  third of the standalone partners and read by no site until now. Fixed in
+  #69: a record with `level: null` (every partner without curated hierarchy,
+  all partners on DXA sites) is now main, not associated.
 - `projectFamily`/`PROJECT_FAMILIES` (#59), beside `projectName`: the two
   exhibition sites re-hard-coded this table as English literals because
   nothing shared carried it, which is why a project name translates on the
