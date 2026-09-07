@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.12.3
+
+### Fixed
+
+- `eventDateLabel` (#84): when `date_from_description` and `date_to_description` are equal after trimming, return the single value instead of the pair — legacy printed the pair only when they differ, and the era branch collapses an equal year pair the same way.
+
 ## 1.12.2
 
 ### Fixed

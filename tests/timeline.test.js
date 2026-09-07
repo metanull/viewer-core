@@ -76,6 +76,15 @@ describe('eventDateLabel', () => {
       .toBe('Early 13th century')
   })
 
+  it('collapses an equal date pair to a single value', () => {
+    expect(
+      eventDateLabel({ year_from: 1822 }, { date_from_description: '1822', date_to_description: '1822' }, t),
+    ).toBe('1822')
+    expect(
+      eventDateLabel({ year_from: 1822 }, { date_from_description: '1822', date_to_description: ' 1822 ' }, t),
+    ).toBe('1822')
+  })
+
   it('derives the label from the year range, through eraLabel, when neither name nor date description is given', () => {
     expect(eventDateLabel({ year_from: 900, year_to: 950 }, {}, t)).toBe('900 AD – 950 AD')
     expect(eventDateLabel({ year_from: 1200, year_to: 0 }, {}, t)).toBe('1200 AD –')
