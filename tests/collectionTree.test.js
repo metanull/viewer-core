@@ -60,6 +60,17 @@ describe('buildCollectionTree', () => {
   //   │  └─ page-x1 (order 2, type "page" — not a chapter)
   //   └─ context-x (order 2, type "national-context" — not a theme)
   describe('childType as an array, indexed by depth below the root', () => {
+    it('indexes by depth: childType[0] filters the root\'s children, childType[1] their children, etc.', () => {
+      // root2 (depth 0) → children at depth 1 filtered by childType[0]='theme'
+      // theme-x (depth 1) → children at depth 2 filtered by childType[1]='subtheme'
+      const tree = buildCollectionTree(collections, {
+        purpose: 'test-tree-root-2',
+        childType: ['theme', 'subtheme'],
+      })
+      expect(tree.children('root2').map((n) => n.id)).toEqual(['theme-x'])
+      expect(tree.children('theme-x').map((n) => n.id)).toEqual(['chapter-x1'])
+    })
+
     it('filters each depth to its own type', () => {
       const tree = buildCollectionTree(collections, {
         purpose: 'test-tree-root-2',
