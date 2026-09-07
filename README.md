@@ -352,6 +352,20 @@ const { root, children, breadcrumb, itemsUnder, containing, previous, next } = e
 | `buildCollectionTree(collections, { purpose \| rootId, childType?, order? })` | the pure function `useCollectionTree` reads through `entityRef` for; usable directly outside a component. `childType` takes the same string / array / function forms as above. |
 | `collectionTreeFromThemes(themes, { childType?, order? })` | the same interface from a `themes.json` shape (`sub_themes[]` nested, `pictures[].picture_item_id` for content) instead of a flat, `parent_id`-linked array. `root` is always `null` — a `themes.json` package is already the whole tree, an ordered array of top-level themes, with no marker record to key a root on. Also reachable reactively as `useCollectionTree({ source: 'themes', entity: 'themes' })`, where `purpose`/`rootId` do not apply. |
 
+### Partners
+
+Seven partner lists group by country seven ways — the standalone sites
+bucket a country's partners into "main" and "associated" on a `level`
+field and render an accordion; the DXA sites group the same way with an
+A–Z / Z–A toggle and no tiers. `parent_id` is carried on a third of the
+standalone partners and read nowhere: legacy nested an associated partner
+under the main partner it belongs to.
+
+| Export | Meaning |
+| --- | --- |
+| `groupByCountry(records, { label, tier?, order = 'asc' })` | `[{ country, label, main, associated }]`, one entry per distinct `country_id`, sorted by `label`. `label(country)` names a group's country, the same shape as a facet's `label(value)`. `tier` names the field that marks a main partner (the converged shape's `level`); its value `'partner'` marks main, anything else — including a record the field is absent from — is associated. Without a `tier` every record is main, which is the DXA lists' plain grouping. Partners keep the order `records` was given in within each tier. |
+| `partnerHierarchy(partners)` | `{ children(id), parentOf(id), roots }` from `parent_id`: `children(id)` a partner's associated partners, `parentOf(id)` the main partner it belongs to (or null), `roots` every partner with no parent in the list or whose `parent_id` points outside it. |
+
 ### Conventions
 
 | Export | Meaning |

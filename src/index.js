@@ -27,6 +27,7 @@ export {
   citation, relatedRecords, searchGlossary, timelineLinkFor, useGlossaryPopup, useRelatedRecords,
 } from './record/derivations.js'
 export { buildCollectionTree, collectionTreeFromThemes, useCollectionTree } from './record/collectionTree.js'
+export { groupByCountry, partnerHierarchy } from './record/partners.js'
 
 // Conventions every website had written for itself.
 export { PROJECT_ENTRIES, projectName, useFeaturedRecord, useProjectName, useSection } from './conventions.js'
