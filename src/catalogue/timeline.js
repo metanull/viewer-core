@@ -67,6 +67,12 @@ export function overlapsRange(event, begin, end) {
  */
 export function eventDateLabel(event, text, t) {
   if (text?.date_from_description) {
+    // Legacy printed the pair only when the two differ; the era branch
+    // collapses an equal year_from/year_to the same way. Trim before
+    // comparing so that whitespace doesn't bloat the display.
+    if (text.date_to_description?.trim() === text.date_from_description.trim()) {
+      return text.date_from_description
+    }
     return text.date_to_description
       ? `${text.date_from_description} – ${text.date_to_description}`
       : text.date_from_description
