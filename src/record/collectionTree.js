@@ -46,9 +46,11 @@ function orderOf(node, order) {
  * `collectionTreeFromThemes`: a flat array of `{ id, parent_id, ... }`
  * nodes, a `rootId` among them (or a sentinel none of them carries, for a
  * tree with no root record of its own — see `collectionTreeFromThemes`),
- * and the interface both entry points hand back.
+ * and the interface both entry points hand back. Carries `entity` and `source`
+ * so a consumer handed a built tree can read the nodes' texts without being
+ * told the entity a second time.
  */
-function buildIndex(nodes, rootId, { childType, order = 'display_order', itemIdsOf = itemIdsOfCollection } = {}) {
+function buildIndex(nodes, rootId, { childType, order = 'display_order', itemIdsOf = itemIdsOfCollection, entity, source } = {}) {
   const byIdMap = new Map(nodes.map((node) => [node.id, node]))
   const childIds = new Map() // parent id → ordered child ids
   for (const node of nodes) {
@@ -201,6 +203,8 @@ function buildIndex(nodes, rootId, { childType, order = 'display_order', itemIds
     walk,
     previous,
     next,
+    entity,
+    source,
   }
 }
 
@@ -221,12 +225,13 @@ function buildIndex(nodes, rootId, { childType, order = 'display_order', itemIds
  * uses `['theme', 'subtheme']`); a depth past the end is unfiltered; a
  * function `(node, depth, parent) => boolean` covers anything else. Pure —
  * no reactivity, so it is also what a Node script or a one-off script can
- * call directly.
+ * call directly. `entity` is the translations entity the tree reads (default
+ * `'collections'`); `source` is always `'collections'`.
  */
-export function buildCollectionTree(collections, { purpose, rootId, childType, order = 'display_order' } = {}) {
+export function buildCollectionTree(collections, { purpose, rootId, childType, order = 'display_order', entity = 'collections' } = {}) {
   const nodes = collections ?? []
   const resolvedRootId = rootId ?? nodes.find((node) => node.purpose === purpose)?.id ?? null
-  return buildIndex(nodes, resolvedRootId, { childType, order, itemIdsOf: itemIdsOfCollection })
+  return buildIndex(nodes, resolvedRootId, { childType, order, itemIdsOf: itemIdsOfCollection, entity, source: 'collections' })
 }
 
 // A sentinel no real record's id collides with: `themes.json` is already the
@@ -252,11 +257,13 @@ function flattenThemes(themes, parentId) {
  * The same interface as `buildCollectionTree`, from a `themes.json` shape
  * (top-level themes, each with `sub_themes[]` and `pictures[]`) instead of a
  * flat, `parent_id`-linked `collections.json`. `root` is always null — see
- * above; `walk`/`children`/… all work the same from the (nulled) top.
+ * above; `walk`/`children`/… all work the same from the (nulled) top. `entity`
+ * is the translations entity the tree reads (default `'themes'`); `source` is
+ * always `'themes'`.
  */
-export function collectionTreeFromThemes(themes, { childType, order = 'display_order' } = {}) {
+export function collectionTreeFromThemes(themes, { childType, order = 'display_order', entity = 'themes' } = {}) {
   const nodes = flattenThemes(themes, THEMES_ROOT)
-  return buildIndex(nodes, THEMES_ROOT, { childType, order, itemIdsOf: itemIdsOfTheme })
+  return buildIndex(nodes, THEMES_ROOT, { childType, order, itemIdsOf: itemIdsOfTheme, entity, source: 'themes' })
 }
 
 /**
@@ -269,7 +276,10 @@ export function collectionTreeFromThemes(themes, { childType, order = 'display_o
  * `entityRef`, so the tree is empty (not an error) before that entity's
  * chunk has arrived, and recomputes once it does — a website loads the
  * entity itself, through `meta.entities` or `loadEntities`, exactly as it
- * does for every other record.
+ * does for every other record. Returns `entity` (the translations entity the
+ * tree reads, the value resolved from the options) and `source` (`'collections'`
+ * or `'themes'`), so a consumer handed a built tree can read the nodes' texts
+ * without being told the entity a second time.
  */
 export function useCollectionTree(options = {}) {
   const { entity = 'collections', source = 'collections' } = options
@@ -289,5 +299,7 @@ export function useCollectionTree(options = {}) {
     walk: () => tree.value.walk(),
     previous: (id) => tree.value.previous(id),
     next: (id) => tree.value.next(id),
+    entity: computed(() => tree.value.entity),
+    source: computed(() => tree.value.source),
   }
 }

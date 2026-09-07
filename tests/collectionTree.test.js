@@ -181,6 +181,34 @@ describe('useCollectionTree', () => {
     expect(root.value.id).toBe('theme-a')
     expect(byId.value.get('page-a1').internal_name).toBe('Page A1')
   })
+
+  it("carries the entity and source so a consumer can read the nodes' texts without being told the entity a second time", async () => {
+    await loadEntities(['collections'])
+    const withExplicitEntity = useCollectionTree({ purpose: 'test-tree-root', entity: 'collections' })
+    expect(withExplicitEntity.entity.value).toBe('collections')
+    expect(withExplicitEntity.source.value).toBe('collections')
+  })
+
+  it('defaults entity to collections', async () => {
+    await loadEntities(['collections'])
+    const withDefault = useCollectionTree({ purpose: 'test-tree-root' })
+    expect(withDefault.entity.value).toBe('collections')
+    expect(withDefault.source.value).toBe('collections')
+  })
+
+  it('returns entity: themes and source: themes for a themes tree', () => {
+    const themes = [
+      {
+        id: 'theme-1',
+        display_order: 1,
+        pictures: [{ picture_item_id: 'p1' }],
+        sub_themes: [],
+      },
+    ]
+    const themesTree = useCollectionTree({ source: 'themes', entity: 'themes' })
+    expect(themesTree.entity.value).toBe('themes')
+    expect(themesTree.source.value).toBe('themes')
+  })
 })
 
 describe('collectionTreeFromThemes', () => {

@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.12.0
+
+### Fixed
+
+- `collectionTree.js` (#64): the tree built by `useCollectionTree`, `buildCollectionTree`,
+  and `collectionTreeFromThemes` now carries its `entity` and `source` so a consumer
+  handed a built tree (e.g. viewer-layout's `EssayView`) can read the nodes' texts
+  without being told the entity a second time. Fixes islamicart's theme pages showing
+  internal names instead of theme titles.
+
 ## 1.11.0
 
 The testing kit of wave G (metanull/inventory-app#1695), released separately because it merged after 1.10.0 was cut.
