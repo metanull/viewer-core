@@ -2,6 +2,7 @@ import { computed, toValue } from 'vue'
 import { renderPlain } from '../i18n/markdown.js'
 import { useDataPackage } from '../composables/useDataPackage.js'
 import { entityRef } from '../composables/useEntities.js'
+import { sortChronological } from './pagination.js'
 
 // Two search engines, one interface. The standalone sites search nine named
 // fields of the translation record with up to four keyword rows joined by
@@ -26,33 +27,62 @@ function strings(value) {
 
 // ── The field grammar ──────────────────────────────────────────────────────
 
-function fieldMatches(getters, field, keyword, item, text, helpers) {
+/**
+ * `expand(keyword, lang)` (when given) names alternative spellings of the
+ * same keyword — a glossary term's other spellings, a country's other names
+ * — searched in the same haystack as the keyword itself, so a row matches on
+ * any of them without the site's field map knowing expansion happened.
+ */
+function fieldMatches(getters, field, keyword, item, text, helpers, expand, lang) {
   const needle = String(keyword ?? '').trim().toLowerCase()
   if (!needle) return true
   const getter = getters[field] ?? getters.keyword ?? Object.values(getters)[0]
   if (!getter) return false
-  return strings(getter(item, text, helpers)).some((s) => plain(s).includes(needle))
+  const hay = strings(getter(item, text, helpers)).map(plain)
+  if (hay.some((s) => s.includes(needle))) return true
+  if (!expand) return false
+  return (expand(String(keyword ?? '').trim(), lang) ?? []).some((alt) => {
+    const altNeedle = String(alt ?? '').trim().toLowerCase()
+    return altNeedle !== '' && hay.some((s) => s.includes(altNeedle))
+  })
 }
 
 /**
  * The AND/OR fold of the keyword rows: the first row stands alone, each
  * following row is joined to the result so far by its own `cond`. Rows with
  * no keyword are skipped. No row at all matches everything.
+ *
+ * `rank: 'hits'` (Decision D3, legacy's `ORDER BY nn DESC, pkdate ASC`)
+ * reorders the matches by how many of the active rows each one matched, most
+ * first, then chronologically — `sortChronological`'s own rule, undated
+ * last, rather than a second date comparator written here. Left unranked
+ * (the default) a site keeps its own order, page-size and all — this option
+ * exists for a site that wants the legacy order back, not to replace it.
  */
-function fieldSearch(getters, items, rows, textOf, helpers) {
+function fieldSearch(getters, items, rows, textOf, helpers, { rank, expand, lang } = {}) {
   const active = (rows ?? []).filter((row) => String(row?.keyword ?? '').trim() !== '')
   if (active.length === 0) return [...items]
-  return items.filter((item) => {
+  const matched = []
+  for (const item of items) {
     const text = textOf(item)
     let result = null
+    let hits = 0
     for (const row of active) {
-      const hit = fieldMatches(getters, row.field, row.keyword, item, text, helpers)
+      const hit = fieldMatches(getters, row.field, row.keyword, item, text, helpers, expand, lang)
+      if (hit) hits += 1
       if (result === null) result = hit
       else if (String(row.cond).toUpperCase() === 'OR') result = result || hit
       else result = result && hit
     }
-    return result === true
-  })
+    if (result === true) matched.push({ item, hits })
+  }
+  if (rank === 'hits') {
+    const chronological = sortChronological(matched.map((m) => m.item))
+    const order = new Map(chronological.map((item, i) => [item, i]))
+    matched.sort((a, b) => order.get(a.item) - order.get(b.item))
+    matched.sort((a, b) => b.hits - a.hits)
+  }
+  return matched.map((m) => m.item)
 }
 
 // ── The boolean grammar ────────────────────────────────────────────────────
@@ -125,7 +155,9 @@ function booleanSearch(items, input, hayOf, labelOf) {
  * record's translation in `language`); `search(rows)` takes
  * `[{ field, keyword, cond }]` and folds them with AND/OR. Which fields exist
  * and what each reads is the site's: the nine of `database.php` are Islamic
- * Art's, Baroque Art's differ.
+ * Art's, Baroque Art's differ. `rank: 'hits'` and `expand` (below) apply to
+ * this grammar only — the DXA boolean grammar already ranks by score and is
+ * unaffected by either.
  *
  * `grammar: 'boolean'` — `haystack(record, text)` returns the strings the
  * record is searched in; `search(query)` ranks by the boolean grammar.
@@ -136,8 +168,21 @@ function booleanSearch(items, input, hayOf, labelOf) {
  * and dropped when that language's translations load or change, which is
  * what a site used to do by hand with a `resetSearchIndex()` after
  * `loadEnglish()`.
+ *
+ * `rank: 'hits'` — off by default, so an existing site's own order (or lack
+ * of one) is untouched. On, `search()` returns matches ordered by how many
+ * of the query's rows they matched, then chronologically — legacy's
+ * `ORDER BY nn DESC, pkdate ASC`. A results page composing this into
+ * `viewer-layout`'s list view passes `sort: false` there so the order this
+ * function already computed is not sorted a second time.
+ *
+ * `expand(keyword, language) => string[]` — alternative spellings of a
+ * keyword, searched alongside it in whichever field the row names. Off by
+ * default. `glossaryExpansion` and `countryExpansion` below are the two
+ * legacy rules (`database_results.php:41,113-136,181-186`); `combineExpansions`
+ * runs both.
  */
-export function useKeywordIndex(entity, { grammar, fields = {}, haystack, language = 'en', label } = {}) {
+export function useKeywordIndex(entity, { grammar, fields = {}, haystack, language = 'en', label, rank, expand } = {}) {
   if (grammar !== 'fields' && grammar !== 'boolean') {
     throw new Error(`useKeywordIndex: grammar must be "fields" or "boolean", got "${grammar}"`)
   }
@@ -171,7 +216,9 @@ export function useKeywordIndex(entity, { grammar, fields = {}, haystack, langua
 
   function search(input) {
     const items = records.value ?? []
-    if (grammar === 'fields') return fieldSearch(fields, items, input, textOf, { tr, translations })
+    if (grammar === 'fields') {
+      return fieldSearch(fields, items, input, textOf, { tr, translations }, { rank, expand, lang: lang.value })
+    }
     return booleanSearch(items, input, hayOf, labelOf)
   }
 
@@ -181,4 +228,62 @@ export function useKeywordIndex(entity, { grammar, fields = {}, haystack, langua
   }
 
   return { search, reset, records, language: lang }
+}
+
+// ── Expansion hooks ─────────────────────────────────────────────────────────
+//
+// Both read a term-lookup entity the same way `searchGlossary` does: the
+// translation in `language` falling back to English, never the base record
+// alone, because a spelling or a name is what the visitor typed in and the
+// base record carries neither.
+
+/**
+ * A term equal to one of a glossary entry's spellings, in `language`
+ * (falling back to English), expands to every spelling of that same entry
+ * in that language — legacy's `gl_spellings`/`glossary` lookup
+ * (`database_results.php:104-131`): typing the term used in one spelling
+ * finds the record written with another.
+ */
+export function glossaryExpansion({ entity = 'glossary' } = {}) {
+  return (term, language) => {
+    const needle = String(term ?? '').trim().toLowerCase()
+    if (!needle) return []
+    const { tr } = useDataPackage()
+    for (const record of entityRef(entity).value ?? []) {
+      const t = tr(entity, record.id, language)
+      const spellings = t.spellings?.length ? t.spellings : [record.word]
+      if (spellings.some((s) => String(s ?? '').trim().toLowerCase() === needle)) {
+        return spellings.map((s) => String(s).trim())
+      }
+    }
+    return []
+  }
+}
+
+/**
+ * A term equal to a country's name, in `language` (falling back to
+ * `internal_name`), expands to that country's id — legacy's
+ * `getKeywordCountry` (`database_results.php:27-51,223-224,291-293`): typing
+ * "Egypt" also finds the records held in Egypt. Applies to whichever field a
+ * row names; the field's own getter decides whether a record's country is
+ * part of what it searches — the `keyword` and `location` fields on the
+ * standalone form did, in legacy.
+ */
+export function countryExpansion({ entity = 'countries' } = {}) {
+  return (term, language) => {
+    const needle = String(term ?? '').trim().toLowerCase()
+    if (!needle) return []
+    const { tr } = useDataPackage()
+    const out = []
+    for (const record of entityRef(entity).value ?? []) {
+      const name = tr(entity, record.id, language).name ?? record.internal_name ?? record.id
+      if (String(name).trim().toLowerCase() === needle) out.push(record.id)
+    }
+    return out
+  }
+}
+
+/** Runs every expansion given and concatenates what each returns. */
+export function combineExpansions(...expansions) {
+  return (term, language) => expansions.flatMap((expand) => expand(term, language) ?? [])
 }
