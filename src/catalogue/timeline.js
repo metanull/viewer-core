@@ -56,21 +56,22 @@ export function overlapsRange(event, begin, end) {
 
 /**
  * The label under an event, trying the three rules the sites share in the
- * order the data disambiguates them: a narrative chronology's own period
- * name (`text.name` — a sort key there, not a label, which is why it is
- * carried as a separate field rather than replacing `year_from`), a curated
- * description pair (`date_from_description`/`date_to_description`, for an
- * event whose date is imprecise in a way a bare year cannot say), and
- * failing both, the derived year range through `eraLabel` — the one still
- * reached for by the worldwide country merge, which has neither.
+ * order the data disambiguates them: a curated description pair
+ * (`date_from_description`/`date_to_description`, for an event whose date
+ * is imprecise in a way a bare year cannot say — every package's named event
+ * carries a date description too, so the title is not a date), a narrative
+ * chronology's own period name (`text.name`, a sort key, only tried when an
+ * event has no date description at all), and failing both, the derived year
+ * range through `eraLabel` — the one reached for by the worldwide country
+ * merge, which has neither.
  */
 export function eventDateLabel(event, text, t) {
-  if (text?.name) return text.name
   if (text?.date_from_description) {
     return text.date_to_description
       ? `${text.date_from_description} – ${text.date_to_description}`
       : text.date_from_description
   }
+  if (text?.name) return text.name
   if (!Number.isFinite(event?.year_from)) return ''
   const from = eraLabel(event.year_from, t)
   const yt = effectiveYearTo(event)

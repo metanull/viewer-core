@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.12.2
+
+### Fixed
+
+- `eventDateLabel` (#82): the label under a timeline event now prefers the date description over
+  the title — a title is not a date, and every package's named event carries a date description
+  too, so the name is tried only as a fallback for an event with no date description at all.
+
 ## 1.12.1
 
 ### Fixed
