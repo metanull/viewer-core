@@ -58,7 +58,13 @@ describe('overlapsRange', () => {
 })
 
 describe('eventDateLabel', () => {
-  it('prefers a narrative chronology\'s own period name', () => {
+  it('prefers a date description pair when both name and date_from_description are present', () => {
+    expect(
+      eventDateLabel({ year_from: 1822 }, { name: 'Champollion', date_from_description: '1822' }, t),
+    ).toBe('1822')
+  })
+
+  it('uses the name when only name is present, with no date description', () => {
     expect(eventDateLabel({ year_from: 1400 }, { name: 'The earlier chapter' }, t)).toBe('The earlier chapter')
   })
 
@@ -70,7 +76,7 @@ describe('eventDateLabel', () => {
       .toBe('Early 13th century')
   })
 
-  it('derives the label from the year range, through eraLabel, when neither is given', () => {
+  it('derives the label from the year range, through eraLabel, when neither name nor date description is given', () => {
     expect(eventDateLabel({ year_from: 900, year_to: 950 }, {}, t)).toBe('900 AD – 950 AD')
     expect(eventDateLabel({ year_from: 1200, year_to: 0 }, {}, t)).toBe('1200 AD –')
     expect(eventDateLabel({ year_from: -502 }, {}, t)).toBe('502 BC –')
