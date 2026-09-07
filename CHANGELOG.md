@@ -69,6 +69,23 @@ Wave G of the shared-pages epic (metanull/inventory-app#1695).
   DatabaseResults pages — a sorted list of languages the entity's translations
   exist in, and a ref for the user's selection, with a watcher that loads the
   translations when the selection changes. Three websites read it from locally.
+- `mountSite(config, messages, hash)` (#62): shared smoke-test helper to mount
+  a website on a detached DOM node, set the window hash, and return the app, host,
+  and ready router. Seven smoke tests mount the website; this exports the one
+  pattern they replicate.
+- `checkRoutes(config, { names, legacyPaths })` (#62): verify every route has
+  a name, no route is a catch-all, and expected names and legacy paths are
+  present. Returns the problems found (empty if all is well).
+- `checkSectionMeta(config)` (#62): verify every route has a `meta.section`
+  string, used by the menu to highlight the current page.
+- `checkTextsRendered(host, { namespaces })` (#62): match text keys in a
+  rendered host against a regex; returns the namespaces found.
+- `defineViewerConfig({ dataPackage, inline, plugins })` (#62): return the
+  Vite config object the seven websites duplicate — the `@inventory-data` alias,
+  `optimizeDeps` to inline the viewer packages, 60s test timeout, and test
+  environment set to jsdom. `dataPackage` is the npm package name;
+  `inline` is an optional array of extra packages to inline in tests;
+  `plugins` is the Vite plugins array.
 - `useTimelineEvents` (#55): the engine of a Timeline results page, one
   implementation for the three axes legacy split across separate
   endpoints — the worldwide country merge, an exhibition's own narrative
