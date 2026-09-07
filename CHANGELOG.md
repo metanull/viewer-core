@@ -48,6 +48,20 @@ Wave G of the shared-pages epic (metanull/inventory-app#1695).
   an A–Z/Z–A order — as one derivation, and the `parent_id` relationship
   legacy nested associated partners under their parent by, carried on a
   third of the standalone partners and read by no site until now.
+- `projectFamily`/`PROJECT_FAMILIES` (#59), beside `projectName`: the two
+  exhibition sites re-hard-coded this table as English literals because
+  nothing shared carried it, which is why a project name translates on the
+  galleries and not on the exhibitions.
+- `@metanull/viewer-core/legacy` (#59): `partnerKey`, `partnerFromKey` and
+  `itemFromUidPath`, the `backward_compatibility`-decoding mappings the
+  four DXA sites each wrote near-identically, including Sharing History's
+  variant where a partner's legacy key carries the country as its own
+  prefix rather than a fourth colon-separated segment. Pure, over plain
+  lists — a separate entry point because only a site built against these
+  legacy shapes needs it.
+- `sectionMeta(chrome)` and `mwnfLinks` (#59): the four-line `meta()`
+  helper and the twelve portal addresses every DXA `dataset.config.js`
+  copied.
 
 ## 1.9.1
 

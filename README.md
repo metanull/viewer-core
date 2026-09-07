@@ -371,8 +371,25 @@ under the main partner it belongs to.
 | Export | Meaning |
 | --- | --- |
 | `projectName(key, t)` / `useProjectName()` / `PROJECT_ENTRIES` | a project's name by its legacy key (`ISL`, `EPM`, `DBA`, `BAR`, `AWE`, `DCA`, `DGA`, `EXTHE`, `GALLERIES`), through `core.project.*`; an unknown key reads as itself |
+| `projectFamily(key)` / `PROJECT_FAMILIES` | a project's colour family by the same legacy key (ISL and EPM share `ISLandEPM`, every exhibition shares `EXH`, …) — legacy's own class names, so a site's CSS reads as the stylesheet it was copied from; an unknown key reads as itself |
 | `useSection()` | the `meta.section` of the current route — see Routing |
 | `useFeaturedRecord(entity, { withImage = true, seed })` | one record at random for a landing page's spotlight, among those with an image; null until the entity is loaded; `seed` pins the pick |
+| `sectionMeta(chrome = [])` | returns `meta(section, ...entities) => ({ section, entities: [...chrome, ...entities] })` — a route's `meta` in one call, `chrome` being the entities every page of the site loads regardless of which one it is |
+| `mwnfLinks` | the portal and sibling-site addresses the four DXA configs each repeat under `links` — frozen, spread into a site's own `links` rather than retyped |
+
+### `@metanull/viewer-core/legacy`
+
+The DXA sites' legacy URL mappings, decoded from `backward_compatibility` —
+pure functions over plain lists, no Vue, so a site's own composable stays
+the reactive wrapper around its `partners` / `countries` / `items` refs. A
+separate entry point because only a site built against these legacy shapes
+needs it; the standalone sites never import it.
+
+| Export | Meaning |
+| --- | --- |
+| `partnerKey(partner, countries = [])` | `{ legacyId, countryCode }` from a partner's `backward_compatibility` — `mwnf3:museums:Mus21:ua` on the DXA sites, `mwnf3_sharing_history:sh_partners:at_01_d` on Sharing History, whose key carries the country as its own prefix rather than a fourth segment. `countries` is the fallback for a partner with no `backward_compatibility` at all: its `country_id` resolved to the country's own `code`. |
+| `partnerFromKey(partners, countries, countryCode, legacyId)` | the partner a legacy `/partner/:country/:id` route names, or null — `partnerKey` in reverse |
+| `itemFromUidPath(items, path)` | the item a legacy dbUid *path* names, or null — `backward_compatibility` with `:` swapped for `/`, matched case-insensitively (Sharing History stores its keys lowercase) |
 
 ### The declaration outside a component
 

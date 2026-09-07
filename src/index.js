@@ -30,7 +30,10 @@ export { buildCollectionTree, collectionTreeFromThemes, useCollectionTree } from
 export { groupByCountry, partnerHierarchy } from './record/partners.js'
 
 // Conventions every website had written for itself.
-export { PROJECT_ENTRIES, projectName, useFeaturedRecord, useProjectName, useSection } from './conventions.js'
+export {
+  PROJECT_ENTRIES, PROJECT_FAMILIES, mwnfLinks, projectFamily, projectName,
+  sectionMeta, useFeaturedRecord, useProjectName, useSection,
+} from './conventions.js'
 
 export { default as I18nText } from './i18n/I18nText.vue'
 export { default as I18nTextInline } from './i18n/I18nTextInline.vue'

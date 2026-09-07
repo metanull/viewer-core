@@ -19,6 +19,7 @@
   "exports": {
     ".": "./src/index.js",
     "./i18n": "./src/i18n/index.js",
+    "./legacy": "./src/legacy/index.js",
     "./testing": "./src/testing/index.js",
     "./styles/base.css": "./src/styles/base.css"
   },

@@ -37,6 +37,34 @@ export function useProjectName() {
   return (key) => projectName(key, t)
 }
 
+// A member is borrowed from the MWNF project that originally published it,
+// and legacy names and colours that project on the item sheet and in the
+// results grid — two separate mappings, because legacy keeps them separate:
+// the name is per project key (`PROJECT_ENTRIES` above), the colour is per
+// project *family*, so ISL and EPM share a swatch and every exhibition
+// shares another. The two exhibition sites re-hard-coded this table as
+// English literals next to their own copy of the name table, which is why a
+// project name translates on the galleries and not on the exhibitions.
+export const PROJECT_FAMILIES = Object.freeze({
+  ISL: 'ISLandEPM',
+  EPM: 'ISLandEPM',
+  DBA: 'DBA',
+  BAR: 'DBA',
+  AWE: 'AWE',
+  awe: 'AWE',
+  DCA: 'DCA',
+  DGA: 'DGA',
+  EXTHE: 'EXH',
+  GALLERIES: 'Galleries',
+})
+
+/** A project's family by its legacy key — legacy's own class names, so a
+ * site's CSS reads as the stylesheet it was copied from. A key with no
+ * entry falls back to itself, the same rule `projectName` applies. */
+export function projectFamily(key) {
+  return PROJECT_FAMILIES[key] ?? (key ?? '')
+}
+
 // ── The section a route belongs to ─────────────────────────────────────────
 //
 // A route says what section it is (`meta: { section: 'collection' }`), and
@@ -80,3 +108,41 @@ export function useFeaturedRecord(entity, { withImage = true, seed, images = 'im
     return candidates[Math.floor(random() * candidates.length)] ?? null
   })
 }
+
+// ── A route's `meta.entities` ────────────────────────────────────────────
+
+/**
+ * `sectionMeta(chrome)` returns a `meta(section, ...entities)` helper: a
+ * route's `meta: { section, entities: [...chrome, ...entities] }` in one
+ * call. `chrome` is the entities every page of the site loads regardless of
+ * what it is (the DXA sites' `['gallery', 'items', 'partners', 'countries']`
+ * — the shell reads them on every route); a route names on top of that only
+ * the entities its own page adds. Four DXA configs each wrote this same
+ * four-line closure next to their own `chrome` list.
+ */
+export function sectionMeta(chrome = []) {
+  return (section, ...entities) => ({ section, entities: [...chrome, ...entities] })
+}
+
+// ── The MWNF portal ─────────────────────────────────────────────────────
+
+/**
+ * The addresses every DXA `dataset.config.js` repeats under `links` —
+ * the portal and the sibling standalone sites a gallery or an exhibition
+ * links out to. Frozen: a site's own `links` may add to this object but
+ * copying it is what this replaces.
+ */
+export const mwnfLinks = Object.freeze({
+  portal: 'https://www.museumwnf.org',
+  galleries: 'https://galleries.museumwnf.org',
+  myCollection: 'https://www.museumwnf.org/mycollection/index.php',
+  about: 'https://www.museumwnf.org/about',
+  contact: 'https://www.museumwnf.org/about/contact',
+  legalNotice: 'https://www.museumwnf.org/about/legal-notice',
+  credits: 'https://www.museumwnf.org/about/credits',
+  cookies: 'https://www.museumwnf.org/about/cookies',
+  overallDatabase: 'https://www.museumwnf.org/database_searchform.php',
+  islamicArt: 'https://islamicart.museumwnf.org',
+  baroqueArt: 'https://baroqueart.museumwnf.org',
+  sharingHistory: 'https://sharinghistory.museumwnf.org',
+})
