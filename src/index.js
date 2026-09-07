@@ -4,7 +4,7 @@ export { byId, entityRef, loadEntities, useEntities } from './composables/useEnt
 export { resolveRecordLanguage, useRecordLanguage } from './composables/useRecordLanguage.js'
 export { createI18n, mergeMessages, useI18n, useLocale } from './i18n/index.js'
 export { isRtl, negotiateLanguage } from './i18n/language.js'
-export { renderBlock, renderInline, renderPlain } from './i18n/markdown.js'
+export { md, mdInline, mdStrip, renderBlock, renderInline, renderPlain } from './i18n/markdown.js'
 export { languageLabels, offeredLanguages } from './languages.js'
 export { defaultScrollBehavior, resolveViews } from './router/index.js'
 export { mediaUrl, useSiteConfig } from './siteConfig.js'
@@ -22,7 +22,9 @@ export {
 } from './catalogue/timeline.js'
 
 // The record page: the sheet engine and its derivations.
-export { glossaryEntries, glossaryTermsFor, sheetRows, useRecordSheet } from './record/recordSheet.js'
+export {
+  glossaryEntries, glossaryTermsFor, glossaryTermsForText, sheetRows, useRecordSheet,
+} from './record/recordSheet.js'
 export {
   citation, relatedRecords, searchGlossary, timelineLinkFor, useGlossaryPopup, useRelatedRecords,
 } from './record/derivations.js'

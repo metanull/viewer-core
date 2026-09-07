@@ -3,7 +3,7 @@ import { computed, inject, ref } from 'vue'
 // The renderers travel with the texts: a package that has only this entry
 // point (@metanull/viewer-layout) renders a Markdown prop through the same
 // pipeline as everything else.
-export { renderBlock, renderInline, renderPlain } from './markdown.js'
+export { md, mdInline, mdStrip, renderBlock, renderInline, renderPlain } from './markdown.js'
 
 // The whole of it: look a key up in the active language, fall back to English,
 // and return the key itself when neither has it, so a missing text shows up as

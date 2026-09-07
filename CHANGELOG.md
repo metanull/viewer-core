@@ -6,6 +6,21 @@ Wave G of the shared-pages epic (metanull/inventory-app#1695).
 
 ### Added
 
+- `md`, `mdInline`, `mdStrip` and `glossaryTermsForText` (#57): the seven
+  sites each wrapped `renderBlock`/`renderInline`/`renderPlain` in a local
+  `md`/`mdInline`/`mdStrip`, under two incompatible signatures
+  (`md(text, glossary)` on the standalone sites, `md(text, { glossary })`
+  on the DXA sites) — `md(text, { glossary, breaks = true })`, `mdInline`
+  and `mdStrip` are that wrapper, written once, under the one signature.
+  `glossaryTermsForText(text, language, { entity })` is `glossaryTermsFor`'s
+  counterpart for a text that has no `glossary_ids` column to read — a
+  dynasty history, a theme essay — replacing the two places that scanned
+  the whole glossary against free text by hand
+  (islamicart's `DynastyDetail.vue`, water-in-islam's `useGlossary.js`),
+  one of which matched a spelling as a plain substring rather than a whole
+  word. Matching is cached per glossary list the same way the render
+  pipelines are, so scanning a text costs one pass over the glossary, not a
+  rebuilt regex.
 - `useCollectionTree`'s `childType` now also accepts an array (indexed by
   depth below the root) or a function `(node, depth, parent) => boolean`
   (#54, #66, follow-up). A single type applied at every depth was fine for

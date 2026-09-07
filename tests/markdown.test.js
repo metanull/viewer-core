@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { renderBlock, renderInline, renderPlain } from '../src/index.js'
+import { glossaryIdsIn } from '../src/i18n/markdown.js'
+import { md, mdInline, mdStrip, renderBlock, renderInline, renderPlain } from '../src/index.js'
 
 // A data package holds Markdown, and the importer is what converts the legacy
 // HTML on the way in. These are the only places a text becomes HTML on any
@@ -57,5 +58,60 @@ describe('renderPlain', () => {
   it('reads nothing as nothing', () => {
     expect(renderPlain(null)).toBe('')
     expect(renderPlain('')).toBe('')
+  })
+})
+
+// `md`/`mdInline`/`mdStrip` are what all seven sites wrote for themselves,
+// with two incompatible signatures between them (`md(text, glossary)` and
+// `md(text, { glossary })`). This is the one signature.
+describe('md / mdInline / mdStrip', () => {
+  it('keep a record’s line breaks by default, unlike renderBlock', () => {
+    expect(md('One\nTwo')).toContain('<br>')
+    expect(renderBlock('One\nTwo')).not.toContain('<br>')
+  })
+
+  it('let a caller ask for prose breaks instead', () => {
+    expect(md('One\nTwo', { breaks: false })).not.toContain('<br>')
+  })
+
+  it('highlight a glossary the same way renderBlock/renderInline do', () => {
+    const glossary = [{ id: 'g1', spelling: 'kufic' }]
+    expect(md('A kufic bowl.', { glossary })).toContain('<span class="gloss-term" data-gid="g1">kufic</span>')
+    expect(mdInline('A kufic bowl.', { glossary })).toContain('<span class="gloss-term" data-gid="g1">kufic</span>')
+  })
+
+  it('strip markup the same way renderPlain does', () => {
+    expect(mdStrip('An *italic* title.')).toBe('An italic title.')
+  })
+
+  it('read a missing text as "", not as an empty paragraph', () => {
+    expect(md(null)).toBe('')
+    expect(md('')).toBe('')
+    expect(mdInline(undefined)).toBe('')
+    expect(mdStrip(null)).toBe('')
+  })
+})
+
+describe('glossaryIdsIn', () => {
+  const glossary = [
+    { id: 'g1', spelling: 'kufic' },
+    { id: 'g1', spelling: 'kufic script' },
+    { id: 'g2', spelling: 'glaze' },
+  ]
+
+  it('finds every term whose spelling occurs in the text, once each', () => {
+    expect(glossaryIdsIn('A pot with a fine glaze, in kufic script.', glossary).sort()).toEqual(['g1', 'g2'])
+    expect(glossaryIdsIn('kufic, kufic, kufic', glossary)).toEqual(['g1'])
+  })
+
+  it('matches whole words only, case-insensitively', () => {
+    expect(glossaryIdsIn('unkuficlike', glossary)).toEqual([])
+    expect(glossaryIdsIn('A KUFIC bowl.', glossary)).toEqual(['g1'])
+  })
+
+  it('is nothing for an empty text or an empty glossary', () => {
+    expect(glossaryIdsIn('', glossary)).toEqual([])
+    expect(glossaryIdsIn('kufic', [])).toEqual([])
+    expect(glossaryIdsIn('kufic', null)).toEqual([])
   })
 })
