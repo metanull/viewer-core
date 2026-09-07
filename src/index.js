@@ -17,6 +17,9 @@ export {
   dateRange, eraLabel, inDateRange, roundOutward, yearBuckets, yearBucketsFromRange,
 } from './catalogue/dates.js'
 export { parseBooleanQuery, useKeywordIndex } from './catalogue/keywordIndex.js'
+export {
+  effectiveYearTo, eventDateLabel, overlapsRange, useTimelineEvents,
+} from './catalogue/timeline.js'
 
 // The record page: the sheet engine and its derivations.
 export { glossaryEntries, glossaryTermsFor, sheetRows, useRecordSheet } from './record/recordSheet.js'

@@ -12,7 +12,7 @@ describe('useDataPackage', () => {
     const { entityNames } = useDataPackage()
     // The fixture directory contains package.json, like every installed
     // npm package — it must not surface as an entity.
-    expect(entityNames).toEqual(['collections', 'glossary', 'objects', 'places', 'things'])
+    expect(entityNames).toEqual(['collections', 'glossary', 'objects', 'places', 'things', 'timeline_events', 'timelines'])
   })
 
   it('lazy-loads entity records', async () => {
