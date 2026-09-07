@@ -50,6 +50,51 @@ describe('buildCollectionTree', () => {
     })
   })
 
+  // The second fixture tree (root2, purpose "test-tree-root-2"), rooted
+  // where a single type at every depth would drop a real level — the case
+  // sharinghistory hits (themes, then chapters):
+  //
+  //   root2
+  //   ├─ theme-x (order 1, type "theme")
+  //   │  ├─ chapter-x1 (order 1, type "subtheme", item p1)
+  //   │  └─ page-x1 (order 2, type "page" — not a chapter)
+  //   └─ context-x (order 2, type "national-context" — not a theme)
+  describe('childType as an array, indexed by depth below the root', () => {
+    it('filters each depth to its own type', () => {
+      const tree = buildCollectionTree(collections, {
+        purpose: 'test-tree-root-2',
+        childType: ['theme', 'subtheme'],
+      })
+      expect(tree.children('root2').map((n) => n.id)).toEqual(['theme-x'])
+      expect(tree.children('theme-x').map((n) => n.id)).toEqual(['chapter-x1'])
+    })
+
+    it('leaves a depth past the end of the array unfiltered', () => {
+      const tree = buildCollectionTree(collections, { purpose: 'test-tree-root-2', childType: ['theme'] })
+      expect(tree.children('root2').map((n) => n.id)).toEqual(['theme-x'])
+      expect(tree.children('theme-x').map((n) => n.id)).toEqual(['chapter-x1', 'page-x1'])
+    })
+  })
+
+  describe('childType as a function', () => {
+    it('is called with the node, its depth below the root, and its parent', () => {
+      const calls = []
+      const tree = buildCollectionTree(collections, {
+        purpose: 'test-tree-root-2',
+        childType: (node, depth, parent) => {
+          calls.push({ id: node.id, depth, parentId: parent?.id ?? null })
+          return depth === 1 ? node.type === 'theme' : node.type === 'subtheme'
+        },
+      })
+      expect(tree.children('root2').map((n) => n.id)).toEqual(['theme-x'])
+      expect(tree.children('theme-x').map((n) => n.id)).toEqual(['chapter-x1'])
+      expect(calls).toContainEqual({ id: 'theme-x', depth: 1, parentId: 'root2' })
+      expect(calls).toContainEqual({ id: 'context-x', depth: 1, parentId: 'root2' })
+      expect(calls).toContainEqual({ id: 'chapter-x1', depth: 2, parentId: 'theme-x' })
+      expect(calls).toContainEqual({ id: 'page-x1', depth: 2, parentId: 'theme-x' })
+    })
+  })
+
   describe('parents / breadcrumb', () => {
     it('gives the ancestor chain root-first, and the same chain plus the node for breadcrumb', () => {
       const tree = buildCollectionTree(collections, { purpose: 'test-tree-root' })

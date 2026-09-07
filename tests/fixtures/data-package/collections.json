@@ -61,5 +61,45 @@
     "parent_id": "theme-b",
     "display_order": 1,
     "items": [{ "id": "o3" }]
+  },
+  {
+    "id": "root2",
+    "type": "collection",
+    "purpose": "test-tree-root-2",
+    "internal_name": "Test Tree Root 2 (depth-indexed childType)",
+    "parent_id": null,
+    "items": []
+  },
+  {
+    "id": "theme-x",
+    "type": "theme",
+    "internal_name": "Theme X",
+    "parent_id": "root2",
+    "display_order": 1,
+    "items": []
+  },
+  {
+    "id": "context-x",
+    "type": "national-context",
+    "internal_name": "National Context X (not a theme)",
+    "parent_id": "root2",
+    "display_order": 2,
+    "items": []
+  },
+  {
+    "id": "chapter-x1",
+    "type": "subtheme",
+    "internal_name": "Chapter X1",
+    "parent_id": "theme-x",
+    "display_order": 1,
+    "items": [{ "id": "p1" }]
+  },
+  {
+    "id": "page-x1",
+    "type": "page",
+    "internal_name": "Not a chapter",
+    "parent_id": "theme-x",
+    "display_order": 2,
+    "items": []
   }
 ]

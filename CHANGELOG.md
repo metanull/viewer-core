@@ -6,6 +6,16 @@ Wave G of the shared-pages epic (metanull/inventory-app#1695).
 
 ### Added
 
+- `useCollectionTree`'s `childType` now also accepts an array (indexed by
+  depth below the root) or a function `(node, depth, parent) => boolean`
+  (#54, #66, follow-up). A single type applied at every depth was fine for
+  sharing history's exhibitions → themes filter (dropping the National
+  Context siblings), but its tree has a second level of the same shape one
+  layer down — themes → chapters — and a single type dropped the chapters
+  along with it. `buildCollectionTree`/`collectionTreeFromThemes` and
+  `useCollectionTree` all read the richer form through the same `children()`
+  every other method is built on, so `walk()`, `itemsUnder()`, `containing()`
+  and the rest follow it for free.
 - `useCollectionTree` (#54): a collection tree rooted at a purpose marker
   (`purpose` or an explicit `rootId`), over a flat `collections.json`-shaped
   array — `root`, `byId`, `children(id)`, `parents(id)`, `breadcrumb(id)`,
