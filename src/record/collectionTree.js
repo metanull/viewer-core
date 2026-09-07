@@ -86,11 +86,15 @@ function buildIndex(nodes, rootId, { childType, order = 'display_order', itemIds
   //    that only look like it (sharinghistory's country-specific "National
   //    Context" collections sit next to the real themes), and a caller who
   //    names the type wants it held to at every level, not only the first.
-  //  - an array, indexed by depth below the root (`['theme', 'subtheme']`:
-  //    depth 1 keeps `theme`, depth 2 keeps `subtheme`), for a tree whose
-  //    levels are different types themselves — sharinghistory's exhibitions
-  //    → themes → chapters, where a single type at every depth drops the
-  //    chapters. A depth past the end of the array is unfiltered.
+  //  - an array, indexed by depth below the root: `childType[0]` filters the
+  //    root's children, `childType[1]` filters their children, and so on.
+  //    A depth past the end of the array is unfiltered. For example,
+  //    sharinghistory's exhibitions → themes → chapters uses `['exhibition',
+  //    'theme', 'subtheme']` because the root's direct children are
+  //    exhibitions (depth 0), their children are themes (depth 1), and so on;
+  //    a tree rooted at one exhibition uses `['theme', 'subtheme']` instead.
+  //    A single type at every depth (e.g. `['theme', 'theme', …]`) is not the
+  //    pattern to use when levels differ; it drops real nodes.
   //  - a function `(node, depth, parent) => boolean`, for a rule neither of
   //    the above expresses.
   function children(id) {
@@ -210,12 +214,14 @@ function buildIndex(nodes, rootId, { childType, order = 'display_order', itemIds
  * Introduction). Exactly one of the two is expected. `childType` filters a
  * node's children by `type`: a string applies the same type at every depth
  * (sharinghistory's themes, sitting next to National Context collections
- * that are not themes); an array is indexed by depth below the root, one
- * type per level (sharinghistory's themes *and* chapters — `['theme',
- * 'subtheme']` — since a single type at every depth would drop the
- * chapters); a function `(node, depth, parent) => boolean` covers anything
- * else. Pure — no reactivity, so it is also what a Node script or a one-off
- * script can call directly.
+ * that are not themes); an array is indexed by depth below the root, where
+ * `childType[0]` filters the root's children, `childType[1]` filters their
+ * children, and so on (sharinghistory's exhibitions → themes → chapters uses
+ * `['exhibition', 'theme', 'subtheme']`, and a tree rooted at one exhibition
+ * uses `['theme', 'subtheme']`); a depth past the end is unfiltered; a
+ * function `(node, depth, parent) => boolean` covers anything else. Pure —
+ * no reactivity, so it is also what a Node script or a one-off script can
+ * call directly.
  */
 export function buildCollectionTree(collections, { purpose, rootId, childType, order = 'display_order' } = {}) {
   const nodes = collections ?? []
