@@ -6,6 +6,21 @@ Wave G of the shared-pages epic (metanull/inventory-app#1695).
 
 ### Added
 
+- `useCatalogueData({ eager, defaultLanguage, visible, glossary })` (#58):
+  the wrapper half of seven sites' data composables (2,376 lines) — a
+  three-line `tr`, a memoised `loadEnglish`, a one-shape label helper
+  (`mdStrip(tr(entity, id).name ?? record.internal_name ?? id)`), and the
+  `md`/`mdInline`/`mdStrip`/`availableLanguages`/`loadTranslations`/
+  `translations` re-exports, rewritten by each site around whichever
+  entities and visibility rules were its own. `visible[name]` turns a
+  per-build language filter, a hidden-partner rule or a `display_status`
+  check from code repeated on every page that lists that entity into one
+  declaration; `entity(name)`/`index(name)` are `entityRef`/`byId` narrowed
+  by it. `md`/`mdInline` bind the site's own glossary by default, so a page
+  calls `md(text)` and its terms are marked, without losing the ability to
+  pass a record's own terms instead. What survives in a site's own
+  composable is what genuinely differs — routes, legacy key mappings,
+  chrome images, sibling lists.
 - `md`, `mdInline`, `mdStrip` and `glossaryTermsForText` (#57): the seven
   sites each wrapped `renderBlock`/`renderInline`/`renderPlain` in a local
   `md`/`mdInline`/`mdStrip`, under two incompatible signatures
