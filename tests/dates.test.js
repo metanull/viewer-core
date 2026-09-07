@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { dateRange, eraLabel, inDateRange, roundOutward, yearBuckets, yearBucketsFromRange } from '../src/index.js'
+import { centuryPresets, dateRange, eraLabel, inDateRange, roundOutward, yearBuckets, yearBucketsFromRange } from '../src/index.js'
 
 const t = (key) => ({ 'catalogue.era.bc': 'BC', 'catalogue.era.ad': 'AD', 'catalogue.era.before': 'Before', 'catalogue.era.after': 'After' })[key] ?? key
 
@@ -95,5 +95,19 @@ describe('eraLabel and roundOutward', () => {
     expect(roundOutward(1193, 1250)).toEqual([1100, 1300])
     expect(roundOutward(1193, undefined)).toEqual([1100, 1200])
     expect(roundOutward(undefined, undefined)).toEqual([null, null])
+  })
+})
+
+describe('centuryPresets', () => {
+  it('returns the legacy database form century boundaries', () => {
+    const { from, to } = centuryPresets()
+    expect(from).toEqual([501, 601, 701, 801, 901, 1001, 1101, 1201, 1301, 1401, 1501, 1601, 1701, 1801, 1901, 2001])
+    expect(to).toEqual([600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000])
+  })
+
+  it('preserves the asymmetry between from and to (16 vs 15 values)', () => {
+    const { from, to } = centuryPresets()
+    expect(from.length).toBe(16)
+    expect(to.length).toBe(15)
   })
 })

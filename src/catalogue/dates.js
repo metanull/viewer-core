@@ -193,3 +193,17 @@ export function roundOutward(start, end) {
   const to = Number.isFinite(last) ? Math.ceil(last / 100) * 100 : null
   return [from, to]
 }
+
+/**
+ * The century boundaries that three Database forms build locally, reproducing
+ * legacy `database.php:88–124`. The asymmetry between the two lists is preserved.
+ * The default range (501–2000) is the same as the legacy form's initial state.
+ */
+export function centuryPresets({ from = 501, to = 2000 } = {}) {
+  const fromOptions = Array.from({ length: 16 }, (_, i) => 501 + i * 100)
+  const toOptions = Array.from({ length: 15 }, (_, i) => 600 + i * 100)
+  return {
+    from: fromOptions,
+    to: toOptions,
+  }
+}
