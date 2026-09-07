@@ -25,11 +25,12 @@ describe('groupByCountry', () => {
     const france = rows.find((r) => r.country === 'country-fr')
     expect(france.main.map((p) => p.id)).toEqual(['partner-fr-owner'])
     expect(france.associated.map((p) => p.id)).toEqual(['partner-fr-assoc-1', 'partner-fr-assoc-2'])
-    // A partner the tier field is simply absent from is not the marked value
-    // either, so it is associated rather than assumed main.
+    // A partner with no tier field (null or undefined) is treated as main,
+    // not associated, because exporters emit level: null for partners without
+    // curated hierarchy.
     const germany = rows.find((r) => r.country === 'country-de')
-    expect(germany.main).toEqual([])
-    expect(germany.associated.map((p) => p.id)).toEqual(['partner-de-plain'])
+    expect(germany.main.map((p) => p.id)).toEqual(['partner-de-plain'])
+    expect(germany.associated).toEqual([])
   })
 
   it('sorts groups by label, ascending by default and descending on request', () => {
