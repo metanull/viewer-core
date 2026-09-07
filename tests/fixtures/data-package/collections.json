@@ -1,0 +1,65 @@
+[
+  {
+    "id": "root1",
+    "type": "collection",
+    "purpose": "test-tree-root",
+    "internal_name": "Test Tree Root",
+    "parent_id": null,
+    "items": []
+  },
+  {
+    "id": "theme-a",
+    "type": "theme",
+    "internal_name": "Theme A",
+    "parent_id": "root1",
+    "display_order": 1,
+    "items": []
+  },
+  {
+    "id": "theme-b",
+    "type": "theme",
+    "internal_name": "Theme B",
+    "parent_id": "root1",
+    "display_order": 2,
+    "items": [{ "id": "o4" }]
+  },
+  {
+    "id": "extra-a",
+    "type": "collection",
+    "internal_name": "Not a theme",
+    "parent_id": "root1",
+    "display_order": 3,
+    "items": []
+  },
+  {
+    "id": "page-a1",
+    "type": "page",
+    "internal_name": "Page A1",
+    "parent_id": "theme-a",
+    "display_order": 1,
+    "items": [{ "id": "o1" }]
+  },
+  {
+    "id": "page-a2",
+    "type": "page",
+    "internal_name": "Page A2",
+    "parent_id": "theme-a",
+    "display_order": 2,
+    "items": [{ "id": "o2" }]
+  },
+  {
+    "id": "page-a3",
+    "type": "page",
+    "internal_name": "Page A3 (unordered)",
+    "parent_id": "theme-a",
+    "items": []
+  },
+  {
+    "id": "page-b1",
+    "type": "page",
+    "internal_name": "Page B1",
+    "parent_id": "theme-b",
+    "display_order": 1,
+    "items": [{ "id": "o3" }]
+  }
+]

@@ -304,6 +304,39 @@ viewer-layout's.
 | `relatedRecords(record, { entity, language })` / `useRelatedRecords` | `{ inPackage: [{ reference, record, justification }], outside: [reference] }` — a reference the package does not hold stays a reference; nothing is dropped and nothing invented |
 | `timelineLinkFor(record, { name, keys, country, round })` | the route location of the timeline results for the record's country and dates, or null |
 
+### Collection trees
+
+`useCollectionTree` — a collection tree rooted at a purpose marker, over a
+flat `collections.json`-shaped array (`{ id, parent_id, display_order, type,
+purpose, items }`). Four sites each walked this tree from a purpose marker
+by hand — three by `parent_id`/`display_order` over `collections.json`
+(islamicart's Artistic Introduction and Exhibitions, baroqueart, sharing
+history's Exhibitions/themes/chapters), one with the equivalent tree
+pre-built as `themes.json` (the DXA sites) — and each wrote the same reverse
+"collections containing this item" scan by hand. This is that walk, written
+once.
+
+```js
+import { useCollectionTree } from '@metanull/viewer-core'
+
+const exhibitions = useCollectionTree({ purpose: 'exhibitions-root', entity: 'collections' })
+const { root, children, breadcrumb, itemsUnder, containing, previous, next } = exhibitions
+```
+
+| Export | Meaning |
+| --- | --- |
+| `useCollectionTree({ purpose \| rootId, childType?, entity = 'collections', order = 'display_order' })` | the reactive form, over `entityRef(entity)`: empty (not an error) until that entity's chunk has arrived. `purpose` finds the root by its `purpose` field; `rootId` takes a node's id directly (for a site that resolves a marker's single child as the real root itself, as islamicart's Artistic Introduction does). `childType` holds every level's children to one `type` — not only the root's — for a tree whose marker also parents siblings that are not real tree nodes (sharing history's country-specific "National Context" collections, which sit next to the real themes). |
+| `root`, `byId` | reactive: the root node (`null` if the purpose/id is not found), and a `Map` of every node in the tree by id |
+| `children(id)` | a node's children, in `order` |
+| `parents(id)` | the ancestor chain, root-first, node itself excluded |
+| `breadcrumb(id)` | `parents(id)` plus the node itself |
+| `itemsUnder(id)` | the item ids under a node — its own plus every descendant's, depth-first, each once |
+| `containing(itemId)` | the nodes an item is directly attached to (not recursive — a page's items do not make its theme "contain" them; walk up with `parents` from what this returns for that) |
+| `walk()` | the tree flattened depth-first, root excluded |
+| `previous(id)` / `next(id)` | over `walk()`, by index — which is what crosses a branch boundary for free, and is `null` at either end or for an id the tree does not carry |
+| `buildCollectionTree(collections, { purpose \| rootId, childType?, order? })` | the pure function `useCollectionTree` reads through `entityRef` for; usable directly outside a component |
+| `collectionTreeFromThemes(themes, { childType?, order? })` | the same interface from a `themes.json` shape (`sub_themes[]` nested, `pictures[].picture_item_id` for content) instead of a flat, `parent_id`-linked array. `root` is always `null` — a `themes.json` package is already the whole tree, an ordered array of top-level themes, with no marker record to key a root on. Also reachable reactively as `useCollectionTree({ source: 'themes', entity: 'themes' })`, where `purpose`/`rootId` do not apply. |
+
 ### Conventions
 
 | Export | Meaning |

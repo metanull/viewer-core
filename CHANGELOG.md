@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.10.0
+
+Wave G of the shared-pages epic (metanull/inventory-app#1695).
+
+### Added
+
+- `useCollectionTree` (#54): a collection tree rooted at a purpose marker
+  (`purpose` or an explicit `rootId`), over a flat `collections.json`-shaped
+  array — `root`, `byId`, `children(id)`, `parents(id)`, `breadcrumb(id)`,
+  `itemsUnder(id)`, `containing(itemId)`, `walk()` (the flattened
+  depth-first sequence) and `previous(id)`/`next(id)` over it, crossing a
+  theme boundary for free because `walk()` is what they read by index.
+  Replaces three standalone composables that each walked `collections.json`
+  by `parent_id` and `display_order` and each wrote the same reverse
+  "collections containing this item" scan by hand (islamicart, baroqueart,
+  sharinghistory). `collectionTreeFromThemes` adapts the DXA sites'
+  pre-built `themes.json` (`sub_themes[]`, `pictures[]`) to the same
+  interface, so a fourth shape gets it without a second implementation.
+  `buildCollectionTree`/`collectionTreeFromThemes` are pure; `useCollectionTree`
+  is the reactive form over `entityRef`.
+
 ## 1.9.1
 
 ### Fixed

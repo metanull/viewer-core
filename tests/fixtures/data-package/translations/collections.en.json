@@ -1,0 +1,10 @@
+{
+  "root1": { "title": "Test Tree Root" },
+  "theme-a": { "title": "Theme A" },
+  "theme-b": { "title": "Theme B" },
+  "extra-a": { "title": "Not A Theme" },
+  "page-a1": { "title": "Page A1" },
+  "page-a2": { "title": "Page A2" },
+  "page-a3": { "title": "Page A3" },
+  "page-b1": { "title": "Page B1" }
+}
