@@ -1,0 +1,37 @@
+[
+  {
+    "id": "partner-fr-owner",
+    "country_id": "country-fr",
+    "level": "partner",
+    "parent_id": null,
+    "project_ids": ["ISL"],
+    "item_count": 12,
+    "featured": true
+  },
+  {
+    "id": "partner-fr-assoc-1",
+    "country_id": "country-fr",
+    "level": "associated_partner",
+    "parent_id": "partner-fr-owner",
+    "project_ids": ["ISL"],
+    "item_count": 3,
+    "featured": false
+  },
+  {
+    "id": "partner-fr-assoc-2",
+    "country_id": "country-fr",
+    "level": "associated_partner",
+    "parent_id": "partner-fr-owner",
+    "project_ids": ["ISL"],
+    "item_count": 0,
+    "featured": false
+  },
+  {
+    "id": "partner-de-plain",
+    "country_id": "country-de",
+    "parent_id": null,
+    "project_ids": ["EPM"],
+    "item_count": 5,
+    "featured": false
+  }
+]

@@ -43,6 +43,11 @@ Wave G of the shared-pages epic (metanull/inventory-app#1695).
   their own, pure. The DXA legacy 2-letter country code table stays out of
   this package — a site that keys its Timeline URLs on it passes its own
   `countryIdForCode`.
+- `groupByCountry` and `partnerHierarchy` (#56): the country grouping seven
+  partner lists wrote seven ways — main/associated tiers on a named field,
+  an A–Z/Z–A order — as one derivation, and the `parent_id` relationship
+  legacy nested associated partners under their parent by, carried on a
+  third of the standalone partners and read by no site until now.
 
 ## 1.9.1
 
