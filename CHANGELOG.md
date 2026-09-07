@@ -45,6 +45,15 @@ Wave G of the shared-pages epic (metanull/inventory-app#1695).
   interface, so a fourth shape gets it without a second implementation.
   `buildCollectionTree`/`collectionTreeFromThemes` are pure; `useCollectionTree`
   is the reactive form over `entityRef`.
+- `centuryPresets()` (#60): the century boundaries three Database forms build
+  locally (Islamic Art, Baroque Art), reproducing legacy `database.php:88–124`;
+  returns `{ from: [501, 601, …, 2001], to: [600, 700, …, 2000] }` — the
+  asymmetry between the two lists is preserved. The default range (501–2000) is
+  the same as the legacy form's initial state.
+- `useSearchLanguage(entity)` (#60): the search-language rule common to three
+  DatabaseResults pages — a sorted list of languages the entity's translations
+  exist in, and a ref for the user's selection, with a watcher that loads the
+  translations when the selection changes. Three websites read it from locally.
 - `useTimelineEvents` (#55): the engine of a Timeline results page, one
   implementation for the three axes legacy split across separate
   endpoints — the worldwide country merge, an exhibition's own narrative

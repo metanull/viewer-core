@@ -14,8 +14,9 @@ export { useListQuery } from './catalogue/listQuery.js'
 export { paginate, sortChronological, usePagination } from './catalogue/pagination.js'
 export { facetOptions, useFacets } from './catalogue/facets.js'
 export {
-  dateRange, eraLabel, inDateRange, roundOutward, yearBuckets, yearBucketsFromRange,
+  centuryPresets, dateRange, eraLabel, inDateRange, roundOutward, yearBuckets, yearBucketsFromRange,
 } from './catalogue/dates.js'
+export { useSearchLanguage } from './catalogue/searchLanguage.js'
 export { parseBooleanQuery, useKeywordIndex } from './catalogue/keywordIndex.js'
 export {
   effectiveYearTo, eventDateLabel, overlapsRange, useTimelineEvents,
