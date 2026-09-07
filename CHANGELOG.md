@@ -67,6 +67,17 @@ Wave G of the shared-pages epic (metanull/inventory-app#1695).
   their own, pure. The DXA legacy 2-letter country code table stays out of
   this package — a site that keys its Timeline URLs on it passes its own
   `countryIdForCode`.
+- `useKeywordIndex`'s fields grammar gains `rank: 'hits'` and `expand` (#61,
+  Decision D3), off by default. `rank: 'hits'` orders matches by how many of
+  the query's rows each one matched, then chronologically, undated last —
+  legacy `database_results.php`'s `ORDER BY nn DESC, pkdate ASC`, which the
+  ports had dropped in favour of no order at all. `expand(keyword, language)`
+  searches alternative spellings of a keyword alongside it; `glossaryExpansion`
+  and `countryExpansion` are the two legacy rules — a glossary term matches by
+  any of its spellings in the search language, and a term naming a country
+  matches that country's records too — and `combineExpansions` runs both
+  through the single hook the composable takes. The DXA boolean grammar is
+  untouched.
 - `groupByCountry` and `partnerHierarchy` (#56): the country grouping seven
   partner lists wrote seven ways — main/associated tiers on a named field,
   an A–Z/Z–A order — as one derivation, and the `parent_id` relationship

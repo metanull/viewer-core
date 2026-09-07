@@ -17,7 +17,9 @@ export {
   centuryPresets, dateRange, eraLabel, inDateRange, roundOutward, yearBuckets, yearBucketsFromRange,
 } from './catalogue/dates.js'
 export { useSearchLanguage } from './catalogue/searchLanguage.js'
-export { parseBooleanQuery, useKeywordIndex } from './catalogue/keywordIndex.js'
+export {
+  combineExpansions, countryExpansion, glossaryExpansion, parseBooleanQuery, useKeywordIndex,
+} from './catalogue/keywordIndex.js'
 export {
   effectiveYearTo, eventDateLabel, overlapsRange, useTimelineEvents,
 } from './catalogue/timeline.js'

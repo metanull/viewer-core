@@ -1,14 +1,20 @@
 import { beforeAll, describe, expect, it } from 'vitest'
 import { ref } from 'vue'
-import { loadEntities, parseBooleanQuery, useDataPackage, useKeywordIndex } from '../src/index.js'
+import {
+  combineExpansions, countryExpansion, glossaryExpansion, loadEntities, parseBooleanQuery, useDataPackage, useKeywordIndex,
+} from '../src/index.js'
 
 const ids = (list) => list.map((r) => r.id)
 
 beforeAll(async () => {
-  await loadEntities(['objects'])
+  await loadEntities(['objects', 'countries', 'glossary'])
   const { loadTranslations } = useDataPackage()
   await loadTranslations('objects', 'en')
   await loadTranslations('objects', 'fr')
+  await loadTranslations('countries', 'en')
+  await loadTranslations('countries', 'fr')
+  await loadTranslations('glossary', 'en')
+  await loadTranslations('glossary', 'fr')
 })
 
 describe('the field grammar', () => {
@@ -52,6 +58,96 @@ describe('the field grammar', () => {
 
   it('refuses a grammar it does not have', () => {
     expect(() => useKeywordIndex('objects', { grammar: 'regex' })).toThrow(/grammar/)
+  })
+})
+
+describe('rank: hits', () => {
+  // o1 matches all three OR'd rows (name, material, location); o3 and o4
+  // each match material alone. o2 matches none and drops out.
+  const rows = [
+    { field: 'name', keyword: 'bowl' },
+    { field: 'material', keyword: 'ceramic', cond: 'OR' },
+    { field: 'location', keyword: 'cairo', cond: 'OR' },
+  ]
+  const fields = {
+    name: (r, t) => t.name,
+    material: (r, t) => t.type,
+    location: (r, t) => t.location,
+  }
+
+  it('leaves the order alone by default', () => {
+    const { search } = useKeywordIndex('objects', { grammar: 'fields', fields })
+    expect(ids(search(rows))).toEqual(['o1', 'o3', 'o4'])
+  })
+
+  it('orders by hits, then chronologically, undated last', () => {
+    const { search } = useKeywordIndex('objects', { grammar: 'fields', fields, rank: 'hits' })
+    // o1: 3 hits. o4 (dated 1550) and o3 (undated) both have 1: dated first.
+    expect(ids(search(rows))).toEqual(['o1', 'o4', 'o3'])
+  })
+})
+
+describe('expand', () => {
+  it('glossaryExpansion finds a record written with another spelling of the same term', () => {
+    const { search } = useKeywordIndex('objects', {
+      grammar: 'fields',
+      fields: { description: (r, t) => t.description },
+      expand: glossaryExpansion(),
+    })
+    // o1's description contains "kufic script" outright; o3's contains only
+    // "kufic" — found because "kufic script" expands to "kufic" (a fellow
+    // spelling of glossary entry g1, in English).
+    expect(ids(search([{ field: 'description', keyword: 'kufic script' }]))).toEqual(['o1', 'o3'])
+  })
+
+  it('without expand, the un-shared spelling misses', () => {
+    const { search } = useKeywordIndex('objects', {
+      grammar: 'fields',
+      fields: { description: (r, t) => t.description },
+    })
+    expect(ids(search([{ field: 'description', keyword: 'kufic script' }]))).toEqual(['o1'])
+  })
+
+  it('countryExpansion finds the records held in a country named by term', () => {
+    const { search } = useKeywordIndex('objects', {
+      grammar: 'fields',
+      fields: { location: (item, t) => [t.location, item.country_id] },
+      expand: countryExpansion(),
+    })
+    // o1 and o3 are both held in c-eg ("Egypt"); o1's location text ("Cairo")
+    // never says so, and o3 has no location text at all.
+    expect(ids(search([{ field: 'location', keyword: 'Egypt' }]))).toEqual(['o1', 'o3'])
+  })
+
+  it('combineExpansions runs both', () => {
+    const { search } = useKeywordIndex('objects', {
+      grammar: 'fields',
+      fields: {
+        description: (r, t) => t.description,
+        location: (item, t) => [t.location, item.country_id],
+      },
+      expand: combineExpansions(glossaryExpansion(), countryExpansion()),
+    })
+    expect(ids(search([{ field: 'description', keyword: 'kufic script' }]))).toEqual(['o1', 'o3'])
+    expect(ids(search([{ field: 'location', keyword: 'Egypt' }]))).toEqual(['o1', 'o3'])
+  })
+})
+
+describe('glossaryExpansion and countryExpansion standalone', () => {
+  it('glossaryExpansion(term, language) → the spellings of the matching entry, in that language', () => {
+    const expand = glossaryExpansion()
+    expect(expand('kufic script', 'en')).toEqual(['kufic', 'kufic script'])
+    expect(expand('écriture coufique', 'fr')).toEqual(['coufique', 'écriture coufique'])
+    expect(expand('no-such-term', 'en')).toEqual([])
+  })
+
+  it('countryExpansion(term, language) → the id of the country named by term', () => {
+    const expand = countryExpansion()
+    expect(expand('Egypt', 'en')).toEqual(['c-eg'])
+    expect(expand('Égypte', 'fr')).toEqual(['c-eg'])
+    // French has no name for Syria in the fixture; falls back to English.
+    expect(expand('Syria', 'fr')).toEqual(['c-sy'])
+    expect(expand('Atlantis', 'en')).toEqual([])
   })
 })
 
