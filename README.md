@@ -28,11 +28,23 @@ npm install @metanull/viewer-core vue vue-router
 
 Required website-side Vite configuration (`vite.config.js`):
 
+```js
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import { defineViewerConfig } from '@metanull/viewer-core/vite'
+
+export default defineConfig({
+  ...defineViewerConfig({ dataPackage: '@metanull/<dataset>-data', plugins: [vue()] }),
+})
+```
+
+The `defineViewerConfig` helper returns a Vite config object with the shared settings all websites use:
+
 | Setting | Value | Why |
 | --- | --- | --- |
 | `resolve.alias['@inventory-data']` | path to the installed `@metanull/<dataset>-data` | `useDataPackage` reads all JSON (entities and `translations/`) through this alias |
 | `optimizeDeps.exclude` | `['@metanull/viewer-core']` | the package ships `.vue` source; esbuild pre-bundling cannot parse it |
-| plugin | `@vitejs/plugin-vue` | compiles the shipped `.vue` views |
+| plugin | supplied via `plugins` parameter | compiles the shipped `.vue` views |
 
 ## Usage
 
@@ -588,7 +600,7 @@ The package exports shared smoke-test helpers at @metanull/viewer-core/testing: 
 | checkRoutes(config, { names, legacyPaths }) | Verify every route has a name, no route is a catch-all, and expected names and legacy paths are present. Returns the list of problems found. |
 | checkSectionMeta(config) | Verify every route has a meta.section string (used by the menu to highlight the current page). Returns the list of problems found. |
 | checkTextsRendered(host, { namespaces }) | Match text keys in the rendered host against a regex like /\b(ns1\|ns2)\.[a-z]/i. Returns the list of namespaces found (empty if none). |
-| defineViewerConfig({ dataPackage, inline, plugins }) | Return a Vite config object the seven websites share: the @inventory-data alias, optimizeDeps to inline viewer packages, 	estTimeout of 60s, and the test environment. dataPackage is the npm package name; inline is an optional array of extra packages; plugins is the Vite plugins array (e.g. @vitejs/plugin-vue). |
+| defineViewerConfig({ dataPackage, inline, plugins }) | Return a Vite config object the seven websites share: the @inventory-data alias, optimizeDeps to inline viewer packages, testTimeout of 60s, and the test environment. Exported from `@metanull/viewer-core/vite` for use in `vite.config.js` (separate entry because Vite's config loader runs under Node.js, which cannot parse `.vue` files; the `/testing` barrel reaches a `.vue` file). dataPackage is the npm package name; inline is an optional array of extra packages; plugins is the Vite plugins array (e.g. @vitejs/plugin-vue). |
 | checkOfferedLanguages(config) | Check that the website offers only languages with content, in the declared order, with labels on the switcher. Returns the list of problems found. |
 
 @metanull/viewer-core/testing is not imported by websites, only by their tests. A website test might be:

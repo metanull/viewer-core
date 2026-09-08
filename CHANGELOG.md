@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.13.1
+
+### Added
+
+- `defineViewerConfig` on its own `./vite` entry point (#88): separates the Vite config
+  helper from the testing barrel, which reaches a `.vue` file that Node.js cannot parse.
+  A `vite.config.js` now imports from `@metanull/viewer-core/vite` instead of
+  `@metanull/viewer-core/testing`, and the testing barrel re-exports it for backward
+  compatibility. The entry includes a comment explaining why it is separate.
+
 ## 1.13.0
 
 Wave K of the shared-pages epic (metanull/inventory-app#1692, #1702).
