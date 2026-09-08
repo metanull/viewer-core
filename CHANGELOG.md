@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.13.2
+
+### Fixed
+
+- `defineViewerConfig` resolves the `@inventory-data` alias against the project
+  root, not its own installed path (#92). The helper now accepts an optional
+  `root` parameter (default `process.cwd()`) to resolve the data package from
+  the correct location.
+
 ## 1.13.1
 
 ### Added
