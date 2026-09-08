@@ -9,6 +9,7 @@ export { md, mdInline, mdStrip, renderBlock, renderInline, renderPlain } from '.
 export { languageLabels, offeredLanguages } from './languages.js'
 export { defaultScrollBehavior, resolveViews } from './router/index.js'
 export { mediaUrl, useSiteConfig } from './siteConfig.js'
+export { sourceUrl, useSiteRights } from './rights.js'
 
 // The list pages: query state, pagination, facets, dates, keyword search.
 export { useListQuery } from './catalogue/listQuery.js'

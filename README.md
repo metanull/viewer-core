@@ -67,10 +67,11 @@ createViewer(config).mount('#app')
 | `messages` | `{ [lang]: { [key]: text } }` | no | the website's effective catalogue: the `@metanull/viewer-i18n` bundle it receives, merged with its own `locales/` files (see [Texts](#texts)) |
 | `media` | `{ legacyHost }` | no | the host of the legacy media server, for [`mediaUrl()`](#the-declaration-outside-a-component) |
 | `links` | object | no | the addresses a website links out to: `portal`, `galleries`, `myCollection`, `about`, `contact`, `legalNotice`, `credits`, `cookies` |
+| `site.origin` | string | no | the absolute origin this build is deployed at, base path included when there is one (`https://metanull.github.io/islamicart`, no trailing slash) — declared once here rather than baked into the package, since the package cannot know where it will be served; read by [`sourceUrl()`](#the-declaration-outside-a-component) |
 
 `dataset.config.js` is the whole declaration of a website. Before it mounts,
 a website reads nothing from its data package but `manifest.json`; it reads
-no environment variable; it carries no address outside `links` and `media`.
+no environment variable; it carries no address outside `links`, `media` and `site`.
 
 ### Page shell (`config.shell`)
 
@@ -325,7 +326,7 @@ viewer-layout's.
 | `useGlossaryPopup(entries)` | `{ active, onClick, close }` — one delegated click on the sheet's container answers the term rendered as `.gloss-term` |
 | `searchGlossary(input, language)` | the terms whose spelling starts with the input, for a glossary search box |
 | `glossaryTermsForText(text, language, { entity })` | `glossaryTermsFor`'s counterpart for a text with no `glossary_ids` column — a dynasty history, a theme essay: `[{ id, word, definition, spellings }]` for every glossary term whose spelling occurs in `text`, matched the same word-bounded way `md`/`renderBlock` highlight it. Pass the result through `glossaryEntries` for the `glossary` option the renderers take, the same as `terms`/`glossary` from `useRecordSheet` |
-| `citation({ author, name, project, publisher, year, permalink, inWord })` | the sentence under a sheet, assembled from parts in order rather than written into a text with holes |
+| `citation({ author, name, project, publisher, year, permalink, inWord })` | the sentence under a sheet, assembled from parts in order rather than written into a text with holes; `permalink` is the page's own address, e.g. from [`sourceUrl()`](#the-declaration-outside-a-component) |
 | `relatedRecords(record, { entity, language })` / `useRelatedRecords` | `{ inPackage: [{ reference, record, justification }], outside: [reference] }` — a reference the package does not hold stays a reference; nothing is dropped and nothing invented |
 | `timelineLinkFor(record, { name, keys, country, round })` | the route location of the timeline results for the record's country and dates, or null |
 
@@ -407,6 +408,8 @@ needs it; the standalone sites never import it.
 | --- | --- |
 | `useSiteConfig()` | the configuration `createViewer` received, injected inside a component and read from the application outside one |
 | `mediaUrl(path, size = 'hi_res')` | `${config.media.legacyHost}/${size}/${path}` for a legacy media path the package carries; an address is returned as it is |
+| `useSiteRights()` | `{ holder, termsUrl, attribution }` from the data package's `manifest.rights`; a package with no such block offers no holder or attribution, and `termsUrl` falls back to `mwnfLinks.legalNotice` |
+| `sourceUrl(route)` | `${config.site.origin}/#${path}` for `route` — a route already resolved (its `fullPath` read as it is) or a raw location the installed router resolves; null when the website declares no `site.origin` |
 
 ### `useDataPackage()` → data access (the only allowed way to read the data package)
 
