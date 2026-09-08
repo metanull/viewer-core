@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach, afterEach } from 'vitest'
 import { defineViewerConfig } from '../src/testing/index.js'
+import fs from 'node:fs'
+import path from 'node:path'
 
 describe('defineViewerConfig', () => {
   it('returns a vite config object with required properties', () => {
@@ -65,5 +67,49 @@ describe('defineViewerConfig', () => {
     })
 
     expect(config.plugins).toContain(mockPlugin)
+  })
+
+  describe('data package alias resolution', () => {
+    it('resolves the data package alias from a custom root parameter', () => {
+      // Create a temp directory with node_modules/@scope/name/
+      const tmpDir = fs.mkdtempSync(path.join(__dirname, 'tmp-'))
+      fs.mkdirSync(path.join(tmpDir, 'node_modules', '@metanull', 'test-pkg'), {
+        recursive: true,
+      })
+
+      const config = defineViewerConfig({
+        dataPackage: '@metanull/test-pkg',
+        root: tmpDir,
+      })
+
+      const expectedPath = path.join(tmpDir, 'node_modules', '@metanull', 'test-pkg')
+      expect(config.resolve.alias['@inventory-data']).toBe(expectedPath)
+
+      // Cleanup
+      fs.rmSync(tmpDir, { recursive: true })
+    })
+
+    it('resolves the data package alias from process.cwd() by default', () => {
+      // Create a temp directory as the working directory
+      const originalCwd = process.cwd()
+      const tmpDir = fs.mkdtempSync(path.join(__dirname, 'tmp-'))
+      fs.mkdirSync(path.join(tmpDir, 'node_modules', '@metanull', 'test-pkg'), {
+        recursive: true,
+      })
+
+      try {
+        process.chdir(tmpDir)
+
+        const config = defineViewerConfig({
+          dataPackage: '@metanull/test-pkg',
+        })
+
+        const expectedPath = path.join(tmpDir, 'node_modules', '@metanull', 'test-pkg')
+        expect(config.resolve.alias['@inventory-data']).toBe(expectedPath)
+      } finally {
+        process.chdir(originalCwd)
+        fs.rmSync(tmpDir, { recursive: true })
+      }
+    })
   })
 })

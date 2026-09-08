@@ -1,4 +1,4 @@
-import { fileURLToPath } from 'node:url'
+import path from 'node:path'
 
 /**
  * The shared Vite configuration for viewer websites, returning a config object
@@ -11,20 +11,24 @@ import { fileURLToPath } from 'node:url'
  * the required `'@metanull/viewer-core'` and `'@metanull/viewer-layout'`.
  * `plugins` is an optional array of Vite plugins (e.g. `@vitejs/plugin-vue`),
  * which the site must supply because this package does not depend on them.
+ * `root` is an optional project root path (default `process.cwd()`); use it when
+ * loading the config from a context other than the project directory.
  */
 export function defineViewerConfig({
   dataPackage,
   inline = [],
   plugins = [],
+  root = process.cwd(),
 } = {}) {
   return {
     plugins,
     resolve: {
       alias: {
         // viewer-core reads every JSON of the data package through this alias.
-        '@inventory-data': fileURLToPath(
-          new URL(`./node_modules/${dataPackage}`, import.meta.url),
-        ),
+        // Resolve against the caller's project root, not this file's installed
+        // location: import.meta.url is the package's own path inside node_modules,
+        // not the site's project root where its node_modules actually exists.
+        '@inventory-data': path.join(root, 'node_modules', dataPackage),
       },
     },
     optimizeDeps: {
