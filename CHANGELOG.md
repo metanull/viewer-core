@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.13.0
+
+Wave K of the shared-pages epic (metanull/inventory-app#1692, #1702).
+
+### Added
+
+- `useSiteRights()` and `sourceUrl(route)` (#79): the rights holder, terms
+  address and attribution a citation needs, from the data package's
+  `manifest.rights` (inventory-app#1690), and the address of a page on its
+  actual deployment, from a new `site.origin` config key — neither the
+  package nor the router alone can know where a site is served, so both
+  facts are declared once and read from here rather than assembled by every
+  composed view. `termsUrl` falls back to `mwnfLinks.legalNotice` for a
+  package built before the block existed; `sourceUrl` returns null for a
+  website that declares no `site.origin`, so a page renders its citation
+  without a source address rather than one that resolves nowhere once
+  copied out of the app. `citation()`'s signature is unchanged; the sheet
+  engine feeds it a `permalink` from `sourceUrl` next.
+
 ## 1.12.3
 
 ### Fixed
