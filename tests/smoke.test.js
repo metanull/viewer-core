@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { mountSite, checkRoutes, checkSectionMeta, checkTextsRendered } from '../src/testing/index.js'
 
 const config = {
-  datasetPackage: '@metanull/fixture-data',
+  datasetPackage: '@museumwnf/fixture-data',
   siteName: 'Fixture Museum',
   features: { entities: ['things'] },
   messages: {},

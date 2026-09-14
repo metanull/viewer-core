@@ -6,9 +6,9 @@ import path from 'node:path'
  * the `@inventory-data` alias to the data package, `optimizeDeps` to inline
  * the viewer packages, `testTimeout`, and the test environment.
  *
- * `dataPackage` is the npm package name, e.g. `'@metanull/islamicart-data'`.
+ * `dataPackage` is the npm package name, e.g. `'@museumwnf/islamicart-data'`.
  * `inline` is an optional array of extra packages to inline in tests, beyond
- * the required `'@metanull/viewer-core'` and `'@metanull/viewer-layout'`.
+ * the required `'@museumwnf/viewer-core'` and `'@museumwnf/viewer-layout'`.
  * `plugins` is an optional array of Vite plugins (e.g. `@vitejs/plugin-vue`),
  * which the site must supply because this package does not depend on them.
  * `root` is an optional project root path (default `process.cwd()`); use it when
@@ -38,7 +38,7 @@ export function defineViewerConfig({
       // The /i18n subpath is listed as well as the package: Vite pre-bundles a
       // subpath as its own entry, and a second copy of the text module would be
       // a second, empty set of texts for whatever imported it.
-      exclude: ['@metanull/viewer-core', '@metanull/viewer-core/i18n', '@metanull/viewer-layout'],
+      exclude: ['@museumwnf/viewer-core', '@museumwnf/viewer-core/i18n', '@museumwnf/viewer-layout'],
       // The runtime deps reach the browser through those excluded packages, so
       // the dev-server dependency scan cannot discover them until the website's
       // own views import them directly. Without this list a late discovery
@@ -55,7 +55,7 @@ export function defineViewerConfig({
           // viewer-core ships .vue source; Node cannot load it unless Vitest
           // processes the package instead of externalizing it. viewer-layout's
           // composed views import viewer-core, so the layout is processed too.
-          inline: ['@metanull/viewer-core', '@metanull/viewer-layout', ...inline],
+          inline: ['@museumwnf/viewer-core', '@museumwnf/viewer-layout', ...inline],
         },
       },
     },
