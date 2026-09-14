@@ -2,6 +2,8 @@ import { computed, toValue } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from './i18n/index.js'
 import { entityRef } from './composables/useEntities.js'
+import { useDataPackage } from './composables/useDataPackage.js'
+import { resolveRecordLanguage } from './composables/useRecordLanguage.js'
 
 // Three small conventions each website had written for itself.
 
@@ -12,6 +14,12 @@ import { entityRef } from './composables/useEntities.js'
 // on the left is data; the entry on the right is a shared text
 // (`core.project.*` in viewer-i18n), written out so a reader can see the
 // eight this asks for. A key that is not here reads as itself.
+//
+// @deprecated Project data belongs in the data package, not in viewer-core.
+// Read a project's name from `manifest.projects` via `projectLabel()` /
+// `useProjects()` instead (epic metanull/inventory-app#1727, phase 3) — see
+// the migration table below. Kept only for sites that have not migrated yet
+// (phase 4); removed in the cleanup wave.
 export const PROJECT_ENTRIES = Object.freeze({
   ISL: 'core.project.islamicArt',
   EPM: 'core.project.explorePartners',
@@ -45,6 +53,11 @@ export function useProjectName() {
 // shares another. The two exhibition sites re-hard-coded this table as
 // English literals next to their own copy of the name table, which is why a
 // project name translates on the galleries and not on the exhibitions.
+//
+// @deprecated Chip colour is a per-project site-config map keyed by the
+// project UUID (epic #1727 decision 1: no family/parent relation is modeled
+// anywhere, this table was always a frontend invention). Removed in the
+// cleanup wave alongside `PROJECT_ENTRIES`.
 export const PROJECT_FAMILIES = Object.freeze({
   ISL: 'ISLandEPM',
   EPM: 'ISLandEPM',
@@ -58,11 +71,102 @@ export const PROJECT_FAMILIES = Object.freeze({
   GALLERIES: 'Galleries',
 })
 
-/** A project's family by its legacy key — legacy's own class names, so a
+/**
+ * A project's family by its legacy key — legacy's own class names, so a
  * site's CSS reads as the stylesheet it was copied from. A key with no
- * entry falls back to itself, the same rule `projectName` applies. */
+ * entry falls back to itself, the same rule `projectName` applies.
+ *
+ * @deprecated See `PROJECT_FAMILIES`.
+ */
 export function projectFamily(key) {
   return PROJECT_FAMILIES[key] ?? (key ?? '')
+}
+
+// ── Projects, from the data package ─────────────────────────────────────────
+//
+// `manifest.projects` (epic metanull/inventory-app#1727, phase 2 —
+// `scripts/exporters`) is what `PROJECT_ENTRIES`/`PROJECT_FAMILIES` above
+// should have been: project data belongs in the data package a project's own
+// exporter writes, not in a table viewer-core carries for every website. Its
+// shape, one entry per project UUID:
+//
+//   manifest.projects[projectId] = {
+//     name: { <lang>: '…' },                    // per-language title
+//     site_url: 'https://…' | null,
+//     related_database_url: 'https://…' | null,
+//     artistic_introduction_url: 'https://…' | null,
+//   }
+//
+// A data package built before this phase simply has no `projects` key at
+// all; `projectLabel`/`projectLinks` answer `null` for that case exactly as
+// they do for an unknown `projectId` — a site notices nothing until it
+// migrates. Migration mapping, from the epic's design comment (§B):
+//
+//   RecordView citation line           → projectLabel(manifest, record.project_id, lang) (viewer-layout#81)
+//   ItemSheet "Source database" line   → same, plus a site-config colour map keyed by project UUID (no more `projectFamily`)
+//   "Search related database" block    → projectLinks(manifest, id).relatedDatabaseUrl, rendered iff non-null
+//   Artistic Introduction link         → projectLinks(manifest, id).artisticIntroductionUrl, iff non-null
+//   search-scope include-EPM checkbox  → stays the site's own dataset.config.js scope list (not modeled here — decision 5)
+//   partner Museums/Institutions split → partner.project_uuids matched against a site-config list (decision 5)
+//
+// `PROJECT_ENTRIES`, `PROJECT_FAMILIES` and `projectFamily` are deprecated by
+// this section and removed in the cleanup wave once every site has moved
+// (phase 4). `projectName()`/`useProjectName()` are unaffected — they still
+// resolve a *legacy key* through the installed texts, for whatever has not
+// migrated yet.
+
+/** One entry of `manifest.projects`, or `null` when the package predates
+ * the section or does not carry `projectId`. */
+function projectEntry(manifest, projectId) {
+  return manifest?.projects?.[projectId] ?? null
+}
+
+/**
+ * The name of a project by its data-package UUID, from
+ * `manifest.projects[projectId].name`. Language fallback follows the same
+ * rule every translated field in this package does (`resolveRecordLanguage`):
+ * `lang` when the entry carries it, this package's base language (`en`)
+ * when it does not, the first language the entry carries when it has
+ * neither. `null` — never a thrown error — when the package has no
+ * `projects` section, `projectId` is not one of its keys, or the entry
+ * names nothing at all.
+ */
+export function projectLabel(manifest, projectId, lang) {
+  const names = projectEntry(manifest, projectId)?.name
+  const codes = names ? Object.keys(names) : []
+  if (codes.length === 0) return null
+  return names[resolveRecordLanguage(codes, lang)] ?? null
+}
+
+/**
+ * The three URLs `manifest.projects[projectId]` carries. `null` for the
+ * whole result (not per field) when the package predates the section or
+ * does not carry `projectId`; each field is `null` on its own when the
+ * project simply has no value for it (import time never invents one).
+ */
+export function projectLinks(manifest, projectId) {
+  const entry = projectEntry(manifest, projectId)
+  if (!entry) return null
+  return {
+    siteUrl: entry.site_url ?? null,
+    relatedDatabaseUrl: entry.related_database_url ?? null,
+    artisticIntroductionUrl: entry.artistic_introduction_url ?? null,
+  }
+}
+
+/**
+ * `projectLabel`/`projectLinks` bound to the installed data package and
+ * texts, for a component — the manifest-driven analogue of
+ * `useProjectName()`. `label(projectId)` reads the site's active language;
+ * pass a language explicitly to read another.
+ */
+export function useProjects() {
+  const { manifest } = useDataPackage()
+  const { locale } = useI18n()
+  return {
+    label: (projectId, lang = locale.value) => projectLabel(manifest, projectId, lang),
+    links: (projectId) => projectLinks(manifest, projectId),
+  }
 }
 
 // ── The section a route belongs to ─────────────────────────────────────────

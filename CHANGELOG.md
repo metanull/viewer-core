@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.15.0
+
+Phase 3 of epic metanull/inventory-app#1727 ("Project knowledge moves into
+the data package").
+
+### Added
+
+- `projectLabel(manifest, projectId, lang)` / `projectLinks(manifest, projectId)`
+  / `useProjects()` read the new `manifest.projects` section every exporter
+  emits since #1727 phase 2 — a project UUID → name/site/related-database/
+  artistic-introduction map. Additive: a data package built before phase 2
+  simply has no `projects` key, and every function answers `null` for that
+  exactly as it does for an unknown project id, never throwing.
+
+### Deprecated
+
+- `PROJECT_ENTRIES`, `PROJECT_FAMILIES` and `projectFamily()` — project data
+  belongs in the data package, not in a table viewer-core carries for every
+  website. Kept for sites that have not migrated (phase 4); removed in the
+  cleanup wave. `projectName()`/`useProjectName()` are unaffected — they
+  still resolve a legacy key through the installed texts.
+
 ## 1.14.0
 
 Part of the M1 npmjs-publishing epic (metanull/inventory-app#1721).
