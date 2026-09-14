@@ -28,6 +28,14 @@ describe('defineViewerConfig', () => {
     expect(config.optimizeDeps.exclude).toContain('@museumwnf/viewer-layout')
   })
 
+  it('also excludes the pre-#1722 @metanull/* spellings, since a site\'s own import specifier still uses them', () => {
+    const config = defineViewerConfig({ dataPackage: '@museumwnf/test-data' })
+
+    expect(config.optimizeDeps.exclude).toContain('@metanull/viewer-core')
+    expect(config.optimizeDeps.exclude).toContain('@metanull/viewer-core/i18n')
+    expect(config.optimizeDeps.exclude).toContain('@metanull/viewer-layout')
+  })
+
   it('includes vue and vue-router in optimization', () => {
     const config = defineViewerConfig({ dataPackage: '@museumwnf/test-data' })
 
@@ -47,6 +55,13 @@ describe('defineViewerConfig', () => {
 
     expect(config.test.server.deps.inline).toContain('@museumwnf/viewer-core')
     expect(config.test.server.deps.inline).toContain('@museumwnf/viewer-layout')
+  })
+
+  it('also inlines the pre-#1722 @metanull/* spellings, since a site\'s own import specifier still uses them', () => {
+    const config = defineViewerConfig({ dataPackage: '@museumwnf/test-data' })
+
+    expect(config.test.server.deps.inline).toContain('@metanull/viewer-core')
+    expect(config.test.server.deps.inline).toContain('@metanull/viewer-layout')
   })
 
   it('includes extra packages in the inline list', () => {
