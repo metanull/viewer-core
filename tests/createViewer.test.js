@@ -3,7 +3,7 @@ import { createViewer } from '../src/index.js'
 import { messages } from './fixtures/messages.js'
 
 const config = {
-  datasetPackage: '@metanull/fixture-data',
+  datasetPackage: '@museumwnf/fixture-data',
   siteName: 'Fixture Museum',
   features: { entities: ['things'] },
   messages,

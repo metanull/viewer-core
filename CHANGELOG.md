@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.14.0
+
+Part of the M1 npmjs-publishing epic (metanull/inventory-app#1721).
+
+### Changed
+
+- Package renamed `@metanull/viewer-core` → `@museumwnf/viewer-core` and
+  publishing moves to npmjs (`registry.npmjs.org`) via trusted publishing
+  (OIDC), replacing GitHub Packages for all future versions. The last
+  `@metanull/viewer-core` version stays published, frozen, on GitHub
+  Packages. `publishConfig.registry` now points at npmjs; `release.yml`
+  passes `registry: npmjs` to `package-release.yml@v1.6.0`.
+- `ci.yml`'s `package-ci.yml` pin moves to `v1.6.1`, which alias-installs a
+  renaming PR's tarball under both the new and the pre-rename name in the
+  downstream site matrix — without it, every site (still importing
+  `@metanull/viewer-core`) would silently build against the last published
+  version instead of this PR's code (metanull/viewer-workflows#17).
+- `defineViewerConfig`'s `optimizeDeps.exclude` and `test.server.deps.inline`
+  now list both the `@museumwnf/*` and the transitional `@metanull/*` names
+  for `viewer-core`/`viewer-layout`. Those arrays are matched against the
+  *site's own* import specifier, which still says `@metanull/*` until every
+  site completes metanull/inventory-app#1722; matching only the new name
+  silently stopped inlining/excluding this package for every current
+  consumer, so Vitest externalized it and Node's loader choked on the raw
+  `.vue` sources with `Unknown file extension ".vue"`.
+
 ## 1.13.2
 
 ### Fixed

@@ -4,7 +4,7 @@ import { createViewer, mediaUrl, useSiteConfig } from '../src/index.js'
 import { messages } from './fixtures/messages.js'
 
 const config = {
-  datasetPackage: '@metanull/fixture-data',
+  datasetPackage: '@museumwnf/fixture-data',
   siteName: 'Fixture Museum',
   messages,
   media: { legacyHost: 'https://images.example.org/' },

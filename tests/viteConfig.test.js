@@ -5,7 +5,7 @@ import path from 'node:path'
 
 describe('defineViewerConfig', () => {
   it('returns a vite config object with required properties', () => {
-    const config = defineViewerConfig({ dataPackage: '@metanull/test-data' })
+    const config = defineViewerConfig({ dataPackage: '@museumwnf/test-data' })
 
     expect(config).toHaveProperty('plugins')
     expect(config).toHaveProperty('resolve')
@@ -14,14 +14,22 @@ describe('defineViewerConfig', () => {
   })
 
   it('sets the @inventory-data alias to the data package', () => {
-    const config = defineViewerConfig({ dataPackage: '@metanull/test-data' })
+    const config = defineViewerConfig({ dataPackage: '@museumwnf/test-data' })
 
     expect(config.resolve.alias).toBeDefined()
     expect(config.resolve.alias['@inventory-data']).toBeDefined()
   })
 
   it('excludes the viewer packages from optimization', () => {
-    const config = defineViewerConfig({ dataPackage: '@metanull/test-data' })
+    const config = defineViewerConfig({ dataPackage: '@museumwnf/test-data' })
+
+    expect(config.optimizeDeps.exclude).toContain('@museumwnf/viewer-core')
+    expect(config.optimizeDeps.exclude).toContain('@museumwnf/viewer-core/i18n')
+    expect(config.optimizeDeps.exclude).toContain('@museumwnf/viewer-layout')
+  })
+
+  it('also excludes the pre-#1722 @metanull/* spellings, since a site\'s own import specifier still uses them', () => {
+    const config = defineViewerConfig({ dataPackage: '@museumwnf/test-data' })
 
     expect(config.optimizeDeps.exclude).toContain('@metanull/viewer-core')
     expect(config.optimizeDeps.exclude).toContain('@metanull/viewer-core/i18n')
@@ -29,21 +37,28 @@ describe('defineViewerConfig', () => {
   })
 
   it('includes vue and vue-router in optimization', () => {
-    const config = defineViewerConfig({ dataPackage: '@metanull/test-data' })
+    const config = defineViewerConfig({ dataPackage: '@museumwnf/test-data' })
 
     expect(config.optimizeDeps.include).toContain('vue')
     expect(config.optimizeDeps.include).toContain('vue-router')
   })
 
   it('sets the test environment to jsdom with 60s timeout', () => {
-    const config = defineViewerConfig({ dataPackage: '@metanull/test-data' })
+    const config = defineViewerConfig({ dataPackage: '@museumwnf/test-data' })
 
     expect(config.test.environment).toBe('jsdom')
     expect(config.test.testTimeout).toBe(60000)
   })
 
   it('inlines the core viewer packages and layout for testing', () => {
-    const config = defineViewerConfig({ dataPackage: '@metanull/test-data' })
+    const config = defineViewerConfig({ dataPackage: '@museumwnf/test-data' })
+
+    expect(config.test.server.deps.inline).toContain('@museumwnf/viewer-core')
+    expect(config.test.server.deps.inline).toContain('@museumwnf/viewer-layout')
+  })
+
+  it('also inlines the pre-#1722 @metanull/* spellings, since a site\'s own import specifier still uses them', () => {
+    const config = defineViewerConfig({ dataPackage: '@museumwnf/test-data' })
 
     expect(config.test.server.deps.inline).toContain('@metanull/viewer-core')
     expect(config.test.server.deps.inline).toContain('@metanull/viewer-layout')
@@ -51,7 +66,7 @@ describe('defineViewerConfig', () => {
 
   it('includes extra packages in the inline list', () => {
     const config = defineViewerConfig({
-      dataPackage: '@metanull/test-data',
+      dataPackage: '@museumwnf/test-data',
       inline: ['extra-package-1', 'extra-package-2'],
     })
 
@@ -62,7 +77,7 @@ describe('defineViewerConfig', () => {
   it('accepts plugins as a parameter', () => {
     const mockPlugin = { name: 'mock' }
     const config = defineViewerConfig({
-      dataPackage: '@metanull/test-data',
+      dataPackage: '@museumwnf/test-data',
       plugins: [mockPlugin],
     })
 
@@ -73,16 +88,16 @@ describe('defineViewerConfig', () => {
     it('resolves the data package alias from a custom root parameter', () => {
       // Create a temp directory with node_modules/@scope/name/
       const tmpDir = fs.mkdtempSync(path.join(__dirname, 'tmp-'))
-      fs.mkdirSync(path.join(tmpDir, 'node_modules', '@metanull', 'test-pkg'), {
+      fs.mkdirSync(path.join(tmpDir, 'node_modules', '@museumwnf', 'test-pkg'), {
         recursive: true,
       })
 
       const config = defineViewerConfig({
-        dataPackage: '@metanull/test-pkg',
+        dataPackage: '@museumwnf/test-pkg',
         root: tmpDir,
       })
 
-      const expectedPath = path.join(tmpDir, 'node_modules', '@metanull', 'test-pkg')
+      const expectedPath = path.join(tmpDir, 'node_modules', '@museumwnf', 'test-pkg')
       expect(config.resolve.alias['@inventory-data']).toBe(expectedPath)
 
       // Cleanup
@@ -93,7 +108,7 @@ describe('defineViewerConfig', () => {
       // Create a temp directory as the working directory
       const originalCwd = process.cwd()
       const tmpDir = fs.mkdtempSync(path.join(__dirname, 'tmp-'))
-      fs.mkdirSync(path.join(tmpDir, 'node_modules', '@metanull', 'test-pkg'), {
+      fs.mkdirSync(path.join(tmpDir, 'node_modules', '@museumwnf', 'test-pkg'), {
         recursive: true,
       })
 
@@ -101,10 +116,10 @@ describe('defineViewerConfig', () => {
         process.chdir(tmpDir)
 
         const config = defineViewerConfig({
-          dataPackage: '@metanull/test-pkg',
+          dataPackage: '@museumwnf/test-pkg',
         })
 
-        const expectedPath = path.join(tmpDir, 'node_modules', '@metanull', 'test-pkg')
+        const expectedPath = path.join(tmpDir, 'node_modules', '@museumwnf', 'test-pkg')
         expect(config.resolve.alias['@inventory-data']).toBe(expectedPath)
       } finally {
         process.chdir(originalCwd)

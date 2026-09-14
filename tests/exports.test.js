@@ -10,7 +10,7 @@ const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
 
 // An entry point is a promise to another package, and nothing else in this
 // repository would notice it being broken: viewer-layout imports
-// `@metanull/viewer-core/i18n`, and a release that forgot to declare it failed
+// `@museumwnf/viewer-core/i18n`, and a release that forgot to declare it failed
 // there rather than here.
 describe('the package entry points', () => {
   it('gives viewer-layout the text runtime without the application engine', () => {
@@ -27,7 +27,7 @@ describe('the package entry points', () => {
   // texts are passed between packages by provide/inject, so the key has to be
   // the same in both copies or the layout sees an application with no texts.
   it('keys the texts on a symbol shared by every copy of this module', () => {
-    expect(Symbol.keyFor(VIEWER_I18N)).toBe('@metanull/viewer-core:i18n')
+    expect(Symbol.keyFor(VIEWER_I18N)).toBe('@museumwnf/viewer-core:i18n')
   })
 
   it('ships everything the entry points name', () => {

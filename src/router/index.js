@@ -71,7 +71,7 @@ function legacyRoute({ path, resolve, name }, index) {
  * list of entity names, a paginated list of records, a record's fields,
  * enough to look at a new dataset. A website names the real pages in
  * `config.views` (`{ home, list, detail }`), typically the composed views of
- * `@metanull/viewer-layout/views`, and the same route names then render
+ * `@museumwnf/viewer-layout/views`, and the same route names then render
  * them: `home` for `/`, `<entity>-list` and `<entity>-detail` for every
  * entity `features.entities` publishes. A component a site registers on the
  * `home` name in `extraViews` still wins — the escape hatch stays open.

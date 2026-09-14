@@ -1,5 +1,5 @@
 // A website always passes a merged catalogue to createViewer; these tests do
-// the same. The values are the English `core` entries of @metanull/viewer-i18n,
+// the same. The values are the English `core` entries of @museumwnf/viewer-i18n,
 // copied rather than imported: a unit test should fail when this package
 // breaks, not when a text is edited in the dictionary.
 export const messages = {

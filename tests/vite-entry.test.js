@@ -10,14 +10,14 @@ const packageRoot = join(__dirname, '..')
 describe('vite entry', () => {
   it('imports defineViewerConfig from ./vite in plain Node context', () => {
     // Test that the vite entry can be imported by Node without a Vite/Vitest transform.
-    // This simulates what happens when a vite.config.js imports from @metanull/viewer-core/vite.
+    // This simulates what happens when a vite.config.js imports from @museumwnf/viewer-core/vite.
     const viteConfigPath = pathToFileURL(join(packageRoot, 'src/testing/viteConfig.js')).href
     const output = execFileSync('node', [
       '--input-type=module',
       '-e',
       `import('${viteConfigPath}').then(m => {
         if (typeof m.defineViewerConfig !== 'function') process.exit(2)
-        console.log(JSON.stringify(Object.keys(m.defineViewerConfig({ dataPackage: '@metanull/x-data' }))))
+        console.log(JSON.stringify(Object.keys(m.defineViewerConfig({ dataPackage: '@museumwnf/x-data' }))))
       })`,
     ], { encoding: 'utf-8' })
 

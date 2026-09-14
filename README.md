@@ -1,4 +1,4 @@
-# @metanull/viewer-core
+# @museumwnf/viewer-core
 
 Application engine for MWNF websites. A website repo is a thin shell: it provides a
 `dataset.config.js`, its data package and its locale files — this package turns that
@@ -13,17 +13,13 @@ it.
 
 ## Install
 
-Published to GitHub Packages (authentication is always required, even to download).
-
-`.npmrc` in the website repo:
-
-```ini
-@metanull:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
-```
+Published to npmjs (`registry.npmjs.org`), publicly — no authentication needed
+to install. (Versions up to 1.13.2, published as `@metanull/viewer-core`,
+remain available on GitHub Packages, frozen; no new version is published
+there.)
 
 ```bash
-npm install @metanull/viewer-core vue vue-router
+npm install @museumwnf/viewer-core vue vue-router
 ```
 
 Required website-side Vite configuration (`vite.config.js`):
@@ -31,10 +27,10 @@ Required website-side Vite configuration (`vite.config.js`):
 ```js
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { defineViewerConfig } from '@metanull/viewer-core/vite'
+import { defineViewerConfig } from '@museumwnf/viewer-core/vite'
 
 export default defineConfig({
-  ...defineViewerConfig({ dataPackage: '@metanull/<dataset>-data', plugins: [vue()] }),
+  ...defineViewerConfig({ dataPackage: '@museumwnf/<dataset>-data', plugins: [vue()] }),
 })
 ```
 
@@ -42,8 +38,8 @@ The `defineViewerConfig` helper returns a Vite config object with the shared set
 
 | Setting | Value | Why |
 | --- | --- | --- |
-| `resolve.alias['@inventory-data']` | path to the installed `@metanull/<dataset>-data` | `useDataPackage` reads all JSON (entities and `translations/`) through this alias |
-| `optimizeDeps.exclude` | `['@metanull/viewer-core']` | the package ships `.vue` source; esbuild pre-bundling cannot parse it |
+| `resolve.alias['@inventory-data']` | path to the installed `@museumwnf/<dataset>-data` | `useDataPackage` reads all JSON (entities and `translations/`) through this alias |
+| `optimizeDeps.exclude` | `['@museumwnf/viewer-core']` | the package ships `.vue` source; esbuild pre-bundling cannot parse it |
 | plugin | supplied via `plugins` parameter | compiles the shipped `.vue` views |
 
 ## Usage
@@ -51,7 +47,7 @@ The `defineViewerConfig` helper returns a Vite config object with the shared set
 `main.js` (this is the whole website entry point):
 
 ```js
-import { createViewer } from '@metanull/viewer-core'
+import { createViewer } from '@museumwnf/viewer-core'
 import config from './dataset.config.js'
 createViewer(config).mount('#app')
 ```
@@ -64,7 +60,7 @@ createViewer(config).mount('#app')
 
 | Key | Type | Required | Meaning |
 | --- | --- | --- | --- |
-| `datasetPackage` | string | yes | name of the data package, e.g. `@metanull/<dataset>-data` (informational) |
+| `datasetPackage` | string | yes | name of the data package, e.g. `@museumwnf/<dataset>-data` (informational) |
 | `siteName` | string | yes | shown on the Home view |
 | `languages` | string[] | no | the languages the website offers, from [`offeredLanguages()`](#which-languages-a-website-offers); defaults to the manifest's `languages` |
 | `features.entities` | string[] | no | entity names getting list + detail routes (`/<entity>`, `/<entity>/:id`) |
@@ -76,7 +72,7 @@ createViewer(config).mount('#app')
 | `scrollBehavior` | function | no | overrides the router's default scroll rule |
 | `shell` | Vue component | no | page-shell component rendered around the active view (see below) |
 | `navigation` | object | no | passed through untouched as props of the `shell` component |
-| `messages` | `{ [lang]: { [key]: text } }` | no | the website's effective catalogue: the `@metanull/viewer-i18n` bundle it receives, merged with its own `locales/` files (see [Texts](#texts)) |
+| `messages` | `{ [lang]: { [key]: text } }` | no | the website's effective catalogue: the `@museumwnf/viewer-i18n` bundle it receives, merged with its own `locales/` files (see [Texts](#texts)) |
 | `media` | `{ legacyHost }` | no | the host of the legacy media server, for [`mediaUrl()`](#the-declaration-outside-a-component) |
 | `links` | object | no | the addresses a website links out to: `portal`, `galleries`, `myCollection`, `about`, `contact`, `legalNotice`, `credits`, `cookies` |
 | `site.origin` | string | no | the absolute origin this build is deployed at, base path included when there is one (`https://metanull.github.io/islamicart`, no trailing slash) — declared once here rather than baked into the package, since the package cannot know where it will be served; read by [`sourceUrl()`](#the-declaration-outside-a-component) |
@@ -96,11 +92,11 @@ instead of the bare view. The shell is any component honouring this contract:
   checking that the website offers it;
 - renders its default slot as the page content (that slot is the active view).
 
-`PageShell` from `@metanull/viewer-layout` honours this contract; a website enables
+`PageShell` from `@museumwnf/viewer-layout` honours this contract; a website enables
 it entirely from `dataset.config.js`:
 
 ```js
-import { PageShell } from '@metanull/viewer-layout'
+import { PageShell } from '@museumwnf/viewer-layout'
 
 export default {
   // …
@@ -123,14 +119,14 @@ interpolation, no pluralisation, no HTML. A value produced at run time — a
 number, a date, a count — is rendered by the component *next to* the text,
 never inside it, which is what lets a text be translated freely.
 
-Shared texts come from [`@metanull/viewer-i18n`](https://github.com/metanull/viewer-i18n);
+Shared texts come from [`@museumwnf/viewer-i18n`](https://github.com/metanull/viewer-i18n);
 a website's own texts come from its `locales/<lang>.json`. The website merges
 them and passes the result as `config.messages` — local wins, and that is the
 only merge rule:
 
 ```js
-import { createViewer, mergeMessages } from '@metanull/viewer-core'
-import { catalogues } from '@metanull/viewer-i18n/gallery'
+import { createViewer, mergeMessages } from '@museumwnf/viewer-core'
+import { catalogues } from '@museumwnf/viewer-i18n/gallery'
 import config from './dataset.config.js'
 
 const local = {}
@@ -175,8 +171,8 @@ parser produces, not HTML in the source: the escaping below still applies to
 everything else in the text, code spans and link destinations are left alone,
 and an empty or omitted `glossary` costs nothing extra.
 
-A package that needs only the text runtime — `@metanull/viewer-layout` is the
-one — imports it from `@metanull/viewer-core/i18n` instead of the package root.
+A package that needs only the text runtime — `@museumwnf/viewer-layout` is the
+one — imports it from `@museumwnf/viewer-core/i18n` instead of the package root.
 Both resolve to the same module, so there is one set of texts in the
 application; the subpath just leaves the router and the data package out of
 that build.
@@ -210,7 +206,7 @@ One rule for every website: the package declares the site's languages in
 the website offers those that its items actually have content in.
 
 ```js
-import { languageLabels, offeredLanguages } from '@metanull/viewer-core'
+import { languageLabels, offeredLanguages } from '@museumwnf/viewer-core'
 
 const languages = offeredLanguages()
 export default {
@@ -227,7 +223,7 @@ export default {
 The rule is tested once, by the helper every website runs in its own suite:
 
 ```js
-import { checkOfferedLanguages } from '@metanull/viewer-core/testing'
+import { checkOfferedLanguages } from '@museumwnf/viewer-core/testing'
 expect(checkOfferedLanguages(config)).toEqual([])
 ```
 
@@ -249,7 +245,7 @@ not in the URL, never changing the site language, forgotten when the site
 language changes or another record is shown.
 
 ```js
-import { useRecordLanguage } from '@metanull/viewer-core'
+import { useRecordLanguage } from '@museumwnf/viewer-core'
 const { language, languages, dir, select, reset } = useRecordLanguage(item)
 ```
 
@@ -268,7 +264,7 @@ keeps no copy of the records: it reads them through here.
 
 ```js
 import { computed } from 'vue'
-import { entityRef } from '@metanull/viewer-core'
+import { entityRef } from '@museumwnf/viewer-core'
 
 export const items = entityRef('items')
 export const partners = entityRef('partners')
@@ -355,7 +351,7 @@ pre-built as `themes.json` (the DXA sites) — and each wrote the same reverse
 once.
 
 ```js
-import { useCollectionTree } from '@metanull/viewer-core'
+import { useCollectionTree } from '@museumwnf/viewer-core'
 
 const exhibitions = useCollectionTree({ purpose: 'exhibitions-root', entity: 'collections' })
 const { root, children, breadcrumb, itemsUnder, containing, previous, next } = exhibitions
@@ -400,7 +396,7 @@ under the main partner it belongs to.
 | `sectionMeta(chrome = [])` | returns `meta(section, ...entities) => ({ section, entities: [...chrome, ...entities] })` — a route's `meta` in one call, `chrome` being the entities every page of the site loads regardless of which one it is |
 | `mwnfLinks` | the portal and sibling-site addresses the four DXA configs each repeat under `links` — frozen, spread into a site's own `links` rather than retyped |
 
-### `@metanull/viewer-core/legacy`
+### `@museumwnf/viewer-core/legacy`
 
 The DXA sites' legacy URL mappings, decoded from `backward_compatibility` —
 pure functions over plain lists, no Vue, so a site's own composable stays
@@ -455,7 +451,7 @@ module, and re-export what it returns beside what is genuinely the site's —
 routes, legacy key mappings, chrome images, sibling lists.
 
 ```js
-import { useCatalogueData } from '@metanull/viewer-core'
+import { useCatalogueData } from '@museumwnf/viewer-core'
 
 const catalogue = useCatalogueData({
   eager: ['items', 'partners', 'countries', 'glossary', 'dynasties'],
@@ -545,7 +541,7 @@ The generic views exist to look at a new dataset: they expose the data
 package's shape, not the website's. A real website names its pages in
 `config.views`, and the same route names — `home`, `<entity>-list`,
 `<entity>-detail` — then render them. The composed views of
-`@metanull/viewer-layout/views` (`HomeView`, `CatalogueResultsView`,
+`@museumwnf/viewer-layout/views` (`HomeView`, `CatalogueResultsView`,
 `RecordView`) are what a website names there: a landing page, a results
 page and a record page built from the components of that package on the
 composables of this one, driven by a spec the website declares. They live
@@ -553,7 +549,7 @@ in the layout package because they are made of its components, and this
 package does not depend on it.
 
 ```js
-import { CatalogueResultsView, HomeView, RecordView } from '@metanull/viewer-layout/views'
+import { CatalogueResultsView, HomeView, RecordView } from '@museumwnf/viewer-layout/views'
 
 export default {
   features: { entities: ['items'] },
@@ -569,7 +565,7 @@ answers the three components a configuration resolves to.
 
 ### Styles
 
-`@metanull/viewer-core/styles/base.css` (auto-imported by `createViewer`): reset and
+`@museumwnf/viewer-core/styles/base.css` (auto-imported by `createViewer`): reset and
 structural rules only. It consumes CSS custom properties and never defines brand values:
 
 | Property | Default |
@@ -592,7 +588,7 @@ structural rules only. It consumes CSS custom properties and never defines brand
 
 ## Testing a website
 
-The package exports shared smoke-test helpers at @metanull/viewer-core/testing: mount a website, check its configuration, and verify that texts are rendered.
+The package exports shared smoke-test helpers at @museumwnf/viewer-core/testing: mount a website, check its configuration, and verify that texts are rendered.
 
 | Export | Use |
 | --- | --- |
@@ -600,16 +596,16 @@ The package exports shared smoke-test helpers at @metanull/viewer-core/testing: 
 | checkRoutes(config, { names, legacyPaths }) | Verify every route has a name, no route is a catch-all, and expected names and legacy paths are present. Returns the list of problems found. |
 | checkSectionMeta(config) | Verify every route has a meta.section string (used by the menu to highlight the current page). Returns the list of problems found. |
 | checkTextsRendered(host, { namespaces }) | Match text keys in the rendered host against a regex like /\b(ns1\|ns2)\.[a-z]/i. Returns the list of namespaces found (empty if none). |
-| defineViewerConfig({ dataPackage, inline, plugins, root }) | Return a Vite config object the seven websites share: the @inventory-data alias, optimizeDeps to inline viewer packages, testTimeout of 60s, and the test environment. Exported from `@metanull/viewer-core/vite` for use in `vite.config.js` (separate entry because Vite's config loader runs under Node.js, which cannot parse `.vue` files; the `/testing` barrel reaches a `.vue` file). dataPackage is the npm package name; inline is an optional array of extra packages; plugins is the Vite plugins array (e.g. @vitejs/plugin-vue); root is the project root path (default `process.cwd()`), used to resolve the data package from the project root. |
+| defineViewerConfig({ dataPackage, inline, plugins, root }) | Return a Vite config object the seven websites share: the @inventory-data alias, optimizeDeps to inline viewer packages, testTimeout of 60s, and the test environment. Exported from `@museumwnf/viewer-core/vite` for use in `vite.config.js` (separate entry because Vite's config loader runs under Node.js, which cannot parse `.vue` files; the `/testing` barrel reaches a `.vue` file). dataPackage is the npm package name; inline is an optional array of extra packages; plugins is the Vite plugins array (e.g. @vitejs/plugin-vue); root is the project root path (default `process.cwd()`), used to resolve the data package from the project root. |
 | checkOfferedLanguages(config) | Check that the website offers only languages with content, in the declared order, with labels on the switcher. Returns the list of problems found. |
 
-@metanull/viewer-core/testing is not imported by websites, only by their tests. A website test might be:
+@museumwnf/viewer-core/testing is not imported by websites, only by their tests. A website test might be:
 
 \\\js
-import { checkOfferedLanguages, checkRoutes, checkSectionMeta, mountSite } from '@metanull/viewer-core/testing'
+import { checkOfferedLanguages, checkRoutes, checkSectionMeta, mountSite } from '@museumwnf/viewer-core/testing'
 import config from '../src/dataset.config.js'
-import { mergeMessages } from '@metanull/viewer-core'
-import { catalogues } from '@metanull/viewer-i18n/gallery'
+import { mergeMessages } from '@museumwnf/viewer-core'
+import { catalogues } from '@museumwnf/viewer-i18n/gallery'
 import ownTexts from '../locales/en.json'
 
 const messages = mergeMessages(catalogues, { en: ownTexts })

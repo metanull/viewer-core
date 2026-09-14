@@ -36,7 +36,7 @@ const FakeShell = defineComponent({
 })
 
 const config = {
-  datasetPackage: '@metanull/fixture-data',
+  datasetPackage: '@museumwnf/fixture-data',
   siteName: 'Fixture Museum',
   languages: ['en', 'fr'],
   features: { entities: ['things'] },

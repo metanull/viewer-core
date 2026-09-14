@@ -1,7 +1,7 @@
 import { computed, inject, ref } from 'vue'
 
 // The renderers travel with the texts: a package that has only this entry
-// point (@metanull/viewer-layout) renders a Markdown prop through the same
+// point (@museumwnf/viewer-layout) renders a Markdown prop through the same
 // pipeline as everything else.
 export { md, mdInline, mdStrip, renderBlock, renderInline, renderPlain } from './markdown.js'
 
@@ -16,13 +16,13 @@ export { md, mdInline, mdStrip, renderBlock, renderInline, renderPlain } from '.
 // system, not an extension of this one.
 
 // Symbol.for, not Symbol: this module is reachable through two specifiers —
-// `@metanull/viewer-core` (which createViewer imports relatively) and
-// `@metanull/viewer-core/i18n` (which viewer-layout imports) — and a bundler
+// `@museumwnf/viewer-core` (which createViewer imports relatively) and
+// `@museumwnf/viewer-core/i18n` (which viewer-layout imports) — and a bundler
 // that resolves them to two module instances would create two distinct keys.
 // The application would then provide one and the layout inject the other,
 // which reads as "no texts installed" in a package that plainly installed
 // them. A key from the global registry is the same key in every instance.
-export const VIEWER_I18N = Symbol.for('@metanull/viewer-core:i18n')
+export const VIEWER_I18N = Symbol.for('@museumwnf/viewer-core:i18n')
 
 const BASE_LANGUAGE = 'en'
 
