@@ -624,6 +624,14 @@ describe('smoke test', () => {
   })
 })
 \\\
+## Licence
+
+This package is Content of the MWNF Website under the [MWNF legal
+notice](https://www.museumwnf.org/about/legal-notice), which governs its use
+(non-commercial, personal, educational and scientific use is permitted, with
+attribution and mandatory reporting — see the notice for the full terms). The
+notice text also ships in this package as `LICENSE.md`.
+
 ## Release procedure
 
 1. Merge to `main` via PR (CI: tests + a downstream build of every website).

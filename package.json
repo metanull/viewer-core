@@ -3,7 +3,7 @@
   "version": "1.13.2",
   "description": "Application engine for MWNF websites: turns a dataset.config.js into a mounted Vue application.",
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "SEE LICENSE IN LICENSE.md",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/metanull/viewer-core.git"
