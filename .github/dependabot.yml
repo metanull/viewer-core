@@ -5,7 +5,7 @@ updates:
     schedule:
       interval: weekly
 
-  # The reusable workflows in metanull/viewer-workflows are pinned to an exact
+  # The reusable workflows in museumwithnofrontiers/viewer-workflows are pinned to an exact
   # version in .github/workflows/*.yml, never to a moving major tag. Dependabot
   # covers reusable-workflow refs as well as step-level actions, so a new
   # viewer-workflows release arrives here as a pull request that runs this
