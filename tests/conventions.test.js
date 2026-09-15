@@ -2,8 +2,8 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import {
-  PROJECT_ENTRIES, PROJECT_FAMILIES, createI18n, loadEntities, mwnfLinks, projectFamily, projectName,
-  sectionMeta, useFeaturedRecord, useProjectName, useSection,
+  PROJECT_ENTRIES, PROJECT_FAMILIES, createI18n, loadEntities, mwnfLinks, projectFamily, projectLabel,
+  projectLinks, projectName, sectionMeta, useFeaturedRecord, useProjectName, useProjects, useSection,
 } from '../src/index.js'
 
 describe('projectName', () => {
@@ -40,6 +40,92 @@ describe('projectFamily', () => {
   it('has one entry per key of PROJECT_ENTRIES, both spellings of Sharing History included', () => {
     expect(Object.keys(PROJECT_FAMILIES).sort()).toEqual(Object.keys(PROJECT_ENTRIES).sort())
     expect(PROJECT_FAMILIES.AWE).toBe(PROJECT_FAMILIES.awe)
+  })
+})
+
+// Epic metanull/inventory-app#1727 phase 3: `manifest.projects`, with
+// fallback to the PROJECT_ENTRIES/PROJECT_FAMILIES convention above for a
+// package that predates the section.
+describe('projectLabel', () => {
+  const manifest = {
+    projects: {
+      'proj-islamicart': {
+        name: { en: 'Discover Islamic Art', fr: 'Découvrir l’art islamique' },
+        site_url: 'https://islamicart.museumwnf.org',
+        related_database_url: null,
+        artistic_introduction_url: 'https://islamicart.museumwnf.org/gai/ISL/',
+      },
+      'proj-french-only': {
+        name: { fr: 'Nom en français seulement' },
+        site_url: null,
+        related_database_url: null,
+        artistic_introduction_url: null,
+      },
+    },
+  }
+
+  it('reads the name in the requested language', () => {
+    expect(projectLabel(manifest, 'proj-islamicart', 'fr')).toBe('Découvrir l’art islamique')
+  })
+
+  it('falls back to en, then to the entry\'s first carried language — resolveRecordLanguage\'s own rule', () => {
+    expect(projectLabel(manifest, 'proj-islamicart', 'de')).toBe('Discover Islamic Art')
+    expect(projectLabel(manifest, 'proj-french-only', 'de')).toBe('Nom en français seulement')
+  })
+
+  it('answers null, never throws, for an unknown project id', () => {
+    expect(projectLabel(manifest, 'nope', 'en')).toBeNull()
+    expect(projectLabel(manifest, undefined, 'en')).toBeNull()
+  })
+
+  it('answers null, never throws, when the package predates manifest.projects entirely', () => {
+    expect(projectLabel({}, 'proj-islamicart', 'en')).toBeNull()
+    expect(projectLabel(undefined, 'proj-islamicart', 'en')).toBeNull()
+  })
+
+  it('answers null for an entry that names nothing at all', () => {
+    expect(projectLabel({ projects: { p: { name: {} } } }, 'p', 'en')).toBeNull()
+    expect(projectLabel({ projects: { p: {} } }, 'p', 'en')).toBeNull()
+  })
+})
+
+describe('projectLinks', () => {
+  const manifest = {
+    projects: {
+      'proj-a': {
+        name: { en: 'A' },
+        site_url: 'https://a.example.org',
+        related_database_url: 'https://a.example.org/database.php',
+        artistic_introduction_url: null,
+      },
+    },
+  }
+
+  it('reads the three URLs the entry carries', () => {
+    expect(projectLinks(manifest, 'proj-a')).toEqual({
+      siteUrl: 'https://a.example.org',
+      relatedDatabaseUrl: 'https://a.example.org/database.php',
+      artisticIntroductionUrl: null,
+    })
+  })
+
+  it('answers null, never throws, for an unknown project id or an absent projects section', () => {
+    expect(projectLinks(manifest, 'nope')).toBeNull()
+    expect(projectLinks({}, 'proj-a')).toBeNull()
+    expect(projectLinks(undefined, 'proj-a')).toBeNull()
+  })
+})
+
+describe('useProjects', () => {
+  it('resolves against the installed data package and the active language, and answers null for a package built before this phase', () => {
+    const i18n = createI18n({ messages: { en: {} }, locale: 'en' })
+    let projects
+    mount({ setup() { projects = useProjects(); return () => null } }, { global: { plugins: [i18n] } })
+    // tests/fixtures/data-package/manifest.json predates epic #1727 phase 2
+    // — it carries no `projects` key at all. Nothing throws; both helpers
+    // read that the same way they read an unknown project id.
+    expect(projects.label('anything')).toBeNull()
+    expect(projects.links('anything')).toBeNull()
   })
 })
 
