@@ -8,9 +8,7 @@ import path from 'node:path'
  *
  * `dataPackage` is the npm package name, e.g. `'@museumwnf/islamicart-data'`.
  * `inline` is an optional array of extra packages to inline in tests, beyond
- * the required `'@museumwnf/viewer-core'` and `'@museumwnf/viewer-layout'`
- * (and, transitionally, their pre-#1722 `'@metanull/*'` spellings — see the
- * comment on `test.server.deps.inline` below).
+ * the required `'@museumwnf/viewer-core'` and `'@museumwnf/viewer-layout'`.
  * `plugins` is an optional array of Vite plugins (e.g. `@vitejs/plugin-vue`),
  * which the site must supply because this package does not depend on them.
  * `root` is an optional project root path (default `process.cwd()`); use it when
@@ -40,19 +38,10 @@ export function defineViewerConfig({
       // The /i18n subpath is listed as well as the package: Vite pre-bundles a
       // subpath as its own entry, and a second copy of the text module would be
       // a second, empty set of texts for whatever imported it.
-      //
-      // Both the @museumwnf and @metanull spellings are listed: this list is
-      // matched against the *site's own* import specifier, which still says
-      // @metanull/* until every site completes its own move in
-      // metanull/inventory-app#1722. Matching only the new name silently stops
-      // excluding the package for every current consumer.
       exclude: [
         '@museumwnf/viewer-core',
         '@museumwnf/viewer-core/i18n',
         '@museumwnf/viewer-layout',
-        '@metanull/viewer-core',
-        '@metanull/viewer-core/i18n',
-        '@metanull/viewer-layout',
       ],
       // The runtime deps reach the browser through those excluded packages, so
       // the dev-server dependency scan cannot discover them until the website's
@@ -71,16 +60,9 @@ export function defineViewerConfig({
           // processes the package instead of externalizing it, matched by the
           // specifier the *importing site* actually wrote. viewer-layout's
           // composed views import viewer-core, so the layout is processed too.
-          // Both scopes are listed for the same transitional reason as
-          // optimizeDeps.exclude above: sites still import @metanull/* until
-          // metanull/inventory-app#1722, so matching only @museumwnf/* would
-          // externalize this package for every current consumer, sending its
-          // raw .vue files to Node's loader instead of Vitest's transform.
           inline: [
             '@museumwnf/viewer-core',
             '@museumwnf/viewer-layout',
-            '@metanull/viewer-core',
-            '@metanull/viewer-layout',
             ...inline,
           ],
         },

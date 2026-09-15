@@ -3,7 +3,7 @@ name: CI
 on:
   pull_request:
 
-# packages: read lets github.token install the private @metanull/*-data
+# packages: read lets github.token install the private @museumwnf/*-data
 # packages the downstream websites depend on. A called workflow can only
 # downgrade the caller's token, so the grant has to be made here.
 permissions:
