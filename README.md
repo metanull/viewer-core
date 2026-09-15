@@ -119,7 +119,7 @@ interpolation, no pluralisation, no HTML. A value produced at run time — a
 number, a date, a count — is rendered by the component *next to* the text,
 never inside it, which is what lets a text be translated freely.
 
-Shared texts come from [`@museumwnf/viewer-i18n`](https://github.com/metanull/viewer-i18n);
+Shared texts come from [`@museumwnf/viewer-i18n`](https://github.com/museumwithnofrontiers/viewer-i18n);
 a website's own texts come from its `locales/<lang>.json`. The website merges
 them and passes the result as `config.messages` — local wins, and that is the
 only merge rule:
