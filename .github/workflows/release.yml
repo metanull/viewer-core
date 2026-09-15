@@ -6,9 +6,9 @@ on:
 
 # id-token: write is required at the caller level: a reusable workflow's
 # permissions are capped by what the caller grants, and npm trusted
-# publishing (registry: npmjs) exchanges this run's OIDC token for a
-# short-lived npm publish credential — see package-release.yml in
-# viewer-workflows for the full explanation.
+# publishing exchanges this run's OIDC token for a short-lived npm
+# publish credential — see package-release.yml in viewer-workflows for
+# the full explanation.
 permissions:
   contents: read
   packages: write
@@ -16,6 +16,4 @@ permissions:
 
 jobs:
   publish:
-    uses: metanull/viewer-workflows/.github/workflows/package-release.yml@v1.6.0
-    with:
-      registry: npmjs
+    uses: metanull/viewer-workflows/.github/workflows/package-release.yml@v1.7.0
