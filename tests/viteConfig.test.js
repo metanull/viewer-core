@@ -28,12 +28,10 @@ describe('defineViewerConfig', () => {
     expect(config.optimizeDeps.exclude).toContain('@museumwnf/viewer-layout')
   })
 
-  it('also excludes the pre-#1722 @metanull/* spellings, since a site\'s own import specifier still uses them', () => {
+  it('does not list the retired @metanull/* spellings, now that every site imports @museumwnf/*', () => {
     const config = defineViewerConfig({ dataPackage: '@museumwnf/test-data' })
 
-    expect(config.optimizeDeps.exclude).toContain('@metanull/viewer-core')
-    expect(config.optimizeDeps.exclude).toContain('@metanull/viewer-core/i18n')
-    expect(config.optimizeDeps.exclude).toContain('@metanull/viewer-layout')
+    expect(config.optimizeDeps.exclude.some((name) => name.startsWith('@metanull/'))).toBe(false)
   })
 
   it('includes vue and vue-router in optimization', () => {
@@ -57,11 +55,12 @@ describe('defineViewerConfig', () => {
     expect(config.test.server.deps.inline).toContain('@museumwnf/viewer-layout')
   })
 
-  it('also inlines the pre-#1722 @metanull/* spellings, since a site\'s own import specifier still uses them', () => {
+  it('does not inline the retired @metanull/* spellings, now that every site imports @museumwnf/*', () => {
     const config = defineViewerConfig({ dataPackage: '@museumwnf/test-data' })
 
-    expect(config.test.server.deps.inline).toContain('@metanull/viewer-core')
-    expect(config.test.server.deps.inline).toContain('@metanull/viewer-layout')
+    expect(
+      config.test.server.deps.inline.some((name) => name.startsWith('@metanull/')),
+    ).toBe(false)
   })
 
   it('includes extra packages in the inline list', () => {

@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.15.1
+
+Part of metanull/inventory-app#1722.
+
+### Changed
+
+- `defineViewerConfig`'s `optimizeDeps.exclude` and `test.server.deps.inline`
+  drop the transitional pre-#1722 `@metanull/*` spellings for `viewer-core`/
+  `viewer-layout`, added in 1.14.0. Now that all seven websites import
+  `@museumwnf/viewer-core`, `@museumwnf/viewer-layout`, `@museumwnf/viewer-i18n`
+  and their own `@museumwnf/<site>-data` package, the `@metanull/*` entries
+  no longer match any consumer's import specifier and only mask a site
+  regressing back to the old name instead of catching it.
+
+### Fixed
+
+- A stale comment in `ci.yml` still described the downstream data packages
+  as `@metanull/*-data`; corrected to `@museumwnf/*-data`.
+
 ## 1.15.0
 
 Phase 3 of epic metanull/inventory-app#1727 ("Project knowledge moves into
